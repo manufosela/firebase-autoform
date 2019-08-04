@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+  <head>
+    <title>firebase-autoform demo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+    <script type="module" src="../firebase-autoform.js"></script>
+    <style>
+      .blocks {
+        display:flex;
+        display-direction:row;
+        flex-wrap: wrap;
+      }
+      .block {
+        display:flex;
+        display-direction:column;
+        flex-wrap: wrap;
+        white-space: normal;
+      }
+      .code {
+        padding: 20px;
+        color:#FFF; 
+        background: #000;
+      }
+      .attributes {
+        padding-left: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="vertical-section-container centered">
+      <h3>Basic firebase-autoform Demo</h3>
+      <div class="blocks">
+        <pre class="block code">
+          <code>
+            &lt;firebase-autoform&gt;&lt;/firebase-autoform&gt;
+          </code>
+        </pre>
+        <pre class="block attributes">
+          <h3>Attributes</h3>
+          <ul>
+            <li>property1 (String)</li>
+            <li>property2 (Number)</li>
+          </ul>
+        </pre>
+      </div>
+
+      <firebase-autoform path="/categoria" api-key="AIzaSyCVpVjyqS9qNcTsTDuQ8qBL1i4VPy5CdpY" domain="coleccion-peliculas"  messaging-sender-id="852819704247" app-id="1:852819704247:web:9ac0a093401920ed">      
+      </firebase-autoform>
+    </div>
+  </body>
+</html>
