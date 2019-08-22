@@ -1,12 +1,12 @@
-import { LitElement, html, css } from '/node_modules/lit-element/lit-element.js';
+import { LitElement, html, css } from 'lit-element';
 import 'firebase/firebase-database';
-import {} from '/node_modules/@polymer/paper-button/paper-button.js';
-import {} from '/node_modules/@polymer/paper-input/paper-input.js';
-import {} from '/node_modules/@polymer/paper-spinner/paper-spinner.js';
-import {} from '/node_modules/@polymer/paper-dialog/paper-dialog.js';
-import {} from '/node_modules/@polymer/paper-item/paper-item.js';
-import {} from '/node_modules/@polymer/paper-dropdown-menu/paper-dropdown-menu.js';
-import {} from '/node_modules/@polymer/paper-listbox/paper-listbox.js';
+import {} from '@polymer/paper-button/paper-button.js';
+import {} from '@polymer/paper-input/paper-input.js';
+import {} from '@polymer/paper-spinner/paper-spinner.js';
+import {} from '@polymer/paper-dialog/paper-dialog.js';
+import {} from '@polymer/paper-item/paper-item.js';
+import {} from '@polymer/paper-dropdown-menu/paper-dropdown-menu.js';
+import {} from '@polymer/paper-listbox/paper-listbox.js';
 
 /**
  * `firebase-autoform`
