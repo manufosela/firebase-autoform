@@ -4,6 +4,7 @@
     <title>firebase-autoform demo</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+    <script type="module" src="/node_modules/firebase-loginbutton/firebase-loginbutton.js"></script>
     <script type="module" src="../firebase-autoform.js"></script>
     <style>
       .blocks {
@@ -38,16 +39,43 @@
           </code>
         </pre>
         <pre class="block attributes">
-          <h3>Attributes</h3>
-          <ul>
-            <li>property1 (String)</li>
-            <li>property2 (Number)</li>
-          </ul>
+          <section>
+            <h3>Attributes</h3>
+            <ul>
+              <li>path (String)</li>
+              <li>waiting-msg (String)</li>
+            </ul>
+            <h3>Public Properties</h3>
+            <ul>
+              <li>data (Object)</li>
+              <li>dataUser (Object)</li>
+            </ul>
+          </section>
+          <section>
+            <h3>Listen Events</h3>
+            <ul>
+              <li>firebase-signin<br>(from firebase-logingbutton component)</li>
+              <li>firebase-signout<br>(from firebase-logingbutton component)</li>
+            </ul>
+          </section>
+          <section>
+            <h3>CSS var</h3>
+            <ul>
+              <li>--path-title-color [default: FF7800]</li>
+              <li>--error-msg-color [default: blue]</li>
+              <li>--spinner-color [default: 4285f4]</li>
+              <li>--bg-save-btn-hover [default: lime]</li>
+              <li>--color-save-btn-hover [default: green]</li>
+              <li>--bg-save-btn [default: yellow]</li>
+              <li>--color-save-btn [default: blue]</li>
+            </ul>
+          </section>
         </pre>
       </div>
 
-      <firebase-autoform path="/categoria" api-key="AIzaSyCVpVjyqS9qNcTsTDuQ8qBL1i4VPy5CdpY" domain="coleccion-peliculas"  messaging-sender-id="852819704247" app-id="1:852819704247:web:9ac0a093401920ed">      
-      </firebase-autoform>
+      <h1>DEMO</h1>
+      <firebase-loginbutton api-key="AIzaSyCVpVjyqS9qNcTsTDuQ8qBL1i4VPy5CdpY" domain="coleccion-peliculas"  messaging-sender-id="852819704247" app-id="1:852819704247:web:9ac0a093401920ed"></firebase-loginbutton>
+      <firebase-autoform path="/peliculas"></firebase-autoform>
     </div>
   </body>
 </html>
