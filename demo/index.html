@@ -1,44 +1,48 @@
 <!doctype html>
 <html>
-  <head>
-    <title>firebase-autoform demo</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
-    <script type="module" src="/node_modules/firebase-loginbutton/firebase-loginbutton.js"></script>
-    <script type="module" src="../firebase-autoform.js"></script>
-    <style>
-      .blocks {
-        display:flex;
-        display-direction:row;
-        flex-wrap: wrap;
-      }
-      .block {
-        display:flex;
-        display-direction:column;
-        flex-wrap: wrap;
-        white-space: normal;
-      }
-      .code {
-        padding: 20px;
-        color:#FFF; 
-        background: #000;
-      }
-      .attributes {
-        padding-left: 20px;
-      }
-    </style>
-  </head>
 
-  <body>
-    <div class="vertical-section-container centered">
-      <h3>Basic firebase-autoform Demo</h3>
-      <div class="blocks">
-        <pre class="block code">
+<head>
+  <title>firebase-autoform demo</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script type="module" src="/node_modules/firebase-loginbutton/firebase-loginbutton.js"></script>
+  <script type="module" src="../firebase-autoform.js"></script>
+  <style>
+    .blocks {
+      display: flex;
+      display-direction: row;
+      flex-wrap: wrap;
+    }
+
+    .block {
+      display: flex;
+      display-direction: column;
+      flex-wrap: wrap;
+      white-space: normal;
+    }
+
+    .code {
+      padding: 20px;
+      color: #FFF;
+      background: #000;
+    }
+
+    .attributes {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="vertical-section-container centered">
+    <h3>Basic firebase-autoform Demo</h3>
+    <div class="blocks">
+      <pre class="block code">
           <code>
             &lt;firebase-autoform&gt;&lt;/firebase-autoform&gt;
           </code>
         </pre>
-        <pre class="block attributes">
+      <pre class="block attributes">
           <section>
             <h3>Attributes</h3>
             <ul>
@@ -71,11 +75,13 @@
             </ul>
           </section>
         </pre>
-      </div>
-
-      <h1>DEMO</h1>
-      <firebase-loginbutton api-key="AIzaSyCVpVjyqS9qNcTsTDuQ8qBL1i4VPy5CdpY" domain="coleccion-peliculas"  messaging-sender-id="852819704247" app-id="1:852819704247:web:9ac0a093401920ed"></firebase-loginbutton>
-      <firebase-autoform path="/peliculas"></firebase-autoform>
     </div>
-  </body>
+
+    <h1>DEMO</h1>
+    <firebase-loginbutton api-key="AIzaSyCVpVjyqS9qNcTsTDuQ8qBL1i4VPy5CdpY" domain="coleccion-peliculas"
+      messaging-sender-id="852819704247" app-id="1:852819704247:web:9ac0a093401920ed"></firebase-loginbutton>
+    <firebase-autoform path="/peliculas" el-id="2"></firebase-autoform>
+  </div>
+</body>
+
 </html>

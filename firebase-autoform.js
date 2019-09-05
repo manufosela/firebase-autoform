@@ -1,4 +1,8 @@
-import { LitElement, html, css } from 'lit-element';
+import {
+  LitElement,
+  html,
+  css
+} from 'lit-element';
 import 'firebase/firebase-database';
 import {} from '@polymer/paper-button/paper-button.js';
 import {} from '@polymer/paper-input/paper-input.js';
@@ -32,6 +36,10 @@ class FirebaseAutoform extends LitElement {
         type: String,
         attribute: 'wating-msg'
       },
+      elId: {
+        type: String,
+        attribute: 'el-id'
+      },
       data: {
         type: Object
       },
@@ -42,7 +50,7 @@ class FirebaseAutoform extends LitElement {
   }
 
   static get styles() {
-    return css`
+    return css `
       :host {
         display: block;
         --path-title-color: #FF7800;
@@ -110,6 +118,7 @@ class FirebaseAutoform extends LitElement {
     super();
     this.path = '/';
 
+    this.elId = null;
     this.data = null;
     this.dataUser = null;
     this._parentKeys = [];
@@ -118,7 +127,7 @@ class FirebaseAutoform extends LitElement {
   }
 
   log(msg) {
-    // console.log(msg);
+    console.log(msg);
   }
 
   connectedCallback() {
@@ -137,32 +146,66 @@ class FirebaseAutoform extends LitElement {
     let starredStatusRef = firebase.database().ref(this.path);
     starredStatusRef.on('value', (snapshot) => {
       this.data = snapshot.val();
-      this._analizeFields();
+      this._analizeFields().then(r => {
+        return new Promise(r => {
+          this._getFields(this.data[0]);
+          this.shadowRoot.querySelector('#spinner').active = false;
+          r();
+        });
+      }).then(r => {
+        //this._getDataId();
+      });
     });
+  }
+
+  _getDataId() {
+    if (this.elId && this.data[this.elId]) {
+      let data = this.data[this.elId];
+      Object.keys(data).forEach((k) => {
+        console.log(k, data[k], typeof data[k]);
+        if (typeof data[k] !== 'object') {
+          this.shadowRoot.querySelector("#" + k).value = data[k];
+        }
+      })
+    }
   }
 
   _analizeFields() {
     this.shadowRoot.querySelector('#spinner').active = true;
     this.shadowRoot.querySelector('#formfieldlayer').textContent = '';
     if (this.data[0]) {
-      let getParentKeys = new Promise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         if (typeof this.data[0] === 'object') {
           this._simple = false;
           this._getParentKeys(resolve);
         } else {
           this._simple = true;
           this._cleanError();
-          let k = [ this.path.replace('/', '') ];
+          let k = [this.path.replace('/', '')];
           this.shadowRoot.querySelector('#spinner').active = false;
           let f = this._createField(k, typeof this.data[0]);
           this.shadowRoot.querySelector('#formfieldlayer').appendChild(f);
+          resolve();
         }
       });
-      getParentKeys.then(() => {
-        this._getFields(this.data[0]);
-        this.shadowRoot.querySelector('#spinner').active = false;
-      });
     }
+  }
+
+  _getParentKeys(resolve, reject) {
+    let ref = firebase.database().ref('/');
+    let keys = [];
+    let counts = [];
+    ref.once('value')
+      .then(snap => {
+        snap.forEach(function (item) {
+          let itemVal = item.val();
+          let itemKey = item.key;
+          keys.push(itemKey);
+        });
+        this.log('keys with entry', keys);
+        this._parentKeys = keys;
+        return resolve();
+      });
   }
 
   _getFields(obj) {
@@ -204,9 +247,11 @@ class FirebaseAutoform extends LitElement {
 
   _createField(labelId, typeobj) {
     let c = this._createFormGroup();
+    let hasVal = (this.elId && this.data[this.elId]);
+    let val = this.data[this.elId][labelId];
     if (!this.shadowRoot.querySelector('#' + labelId)) {
       c.innerHTML = `
-        <paper-input type=${typeobj}" label="${labelId}" id="${labelId}">
+        <paper-input type="${typeobj}" label="${labelId}" id="${labelId}" value="${(hasVal) ? val : ''}">
           <div class="slot" slot="prefix">[${typeobj}]</div>
         </paper-input>
       `;
@@ -307,8 +352,8 @@ class FirebaseAutoform extends LitElement {
     paperListbox.className = 'dropdown-content';
     let container = this._createFormGroup();
     ref.once('value')
-      .then(function(snap) {
-        snap.forEach(function(item) {
+      .then(function (snap) {
+        snap.forEach(function (item) {
           let itemVal = item.val();
           let paperItem = document.createElement('paper-item');
           paperItem.innerHTML = itemVal;
@@ -333,8 +378,8 @@ class FirebaseAutoform extends LitElement {
     paperListbox.slot = 'dropdown-content';
     paperListbox.className = 'dropdown-content';
     ref.once('value')
-      .then(function(snap) {
-        snap.forEach(function(item) {
+      .then(function (snap) {
+        snap.forEach(function (item) {
           let itemVal = item.val();
           let paperItem = document.createElement('paper-item');
           paperItem.innerHTML = itemVal;
@@ -383,7 +428,7 @@ class FirebaseAutoform extends LitElement {
   }
 
   _closeInSeconds(seconds, callback) {
-    setTimeout(()=>{
+    setTimeout(() => {
       this.shadowRoot.querySelector('#mensaje_popup').toggle();
       if (callback) {
         callback();
@@ -395,23 +440,6 @@ class FirebaseAutoform extends LitElement {
     this.shadowRoot.querySelector('#mensaje_popup').innerHTML = '<h1>' + msg + '</h1>';
     this.shadowRoot.querySelector('#mensaje_popup').toggle();
     this._closeInSeconds(2, callback);
-  }
-
-  _getParentKeys(resolve, reject) {
-    let ref = firebase.database().ref('/');
-    let keys = [];
-    let counts = [];
-    ref.once('value')
-      .then(function(snap) {
-        snap.forEach(function(item) {
-          let itemVal = item.val();
-          let itemKey = item.key;
-          keys.push(itemKey);
-        });
-        resolve();
-        this.log('keys with entry', keys);
-        this._parentKeys = keys;
-      }.bind(this));
   }
 
   save() {
@@ -432,7 +460,8 @@ class FirebaseAutoform extends LitElement {
       updates[this.path + '/' + newId] = this.data[nextId];
       firebase.database().ref().update(updates);
       this.data[nextId] = val;
-      this.log(nextId, newId); this.log(val);
+      this.log(nextId, newId);
+      this.log(val);
       this._showMsgPopup('Datos guardados correctamente', this._cleanFields.bind(this));
     }
   }
@@ -467,7 +496,8 @@ class FirebaseAutoform extends LitElement {
       this.data[nextId] = data;
 
       firebase.database().ref(this.path).child(nextId).set(data, (error) => {
-        this.log(nextId); this.log(data);
+        this.log(nextId);
+        this.log(data);
         if (error) {
           this._showMsgPopup(error.message);
           console.log(error);
@@ -479,7 +509,7 @@ class FirebaseAutoform extends LitElement {
   }
 
   render() {
-    return html`
+    return html `
       ${this.dataUser !== null ? html` 
         <h3 class='path'>${this.path.replace(/^\//, '')} <paper-spinner id="spinner" class="blue" active></paper-spinner></h3>
         <section class="wrapper__layer--bbdd-info">
