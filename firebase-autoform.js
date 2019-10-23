@@ -18,7 +18,7 @@ import {} from '@polymer/paper-listbox/paper-listbox.js';
  * @demo demo/index.html
  */
 
-class FirebaseAutoform extends LitElement {
+export class FirebaseAutoform extends LitElement {
   static get is() {
     return 'firebase-autoform';
   }
