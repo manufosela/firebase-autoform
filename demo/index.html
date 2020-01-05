@@ -16,7 +16,7 @@
 
     .block {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       flex-wrap: wrap;
       white-space: normal;
     }
@@ -30,6 +30,12 @@
     .attributes {
       padding-left: 20px;
     }
+    .id { color:#AAA; }
+
+    firebase-autoform {
+      height:700px;
+    }
+
   </style>
 </head>
 
@@ -49,6 +55,7 @@
               <li>path (String)</li>
               <li>waiting-msg (String)</li>
             </ul>
+            <br/><br/>
             <h3>Public Properties</h3>
             <ul>
               <li>data (Object)</li>
@@ -72,6 +79,7 @@
               <li>--color-save-btn-hover [default: green]</li>
               <li>--bg-save-btn [default: yellow]</li>
               <li>--color-save-btn [default: blue]</li>
+              <li>--fields-max-width [default: 300px]</li>
             </ul>
           </section>
         </pre>
@@ -80,7 +88,8 @@
     <h1>DEMO</h1>
     <firebase-loginbutton api-key="AIzaSyCVpVjyqS9qNcTsTDuQ8qBL1i4VPy5CdpY" domain="coleccion-peliculas"
       messaging-sender-id="852819704247" app-id="1:852819704247:web:9ac0a093401920ed"></firebase-loginbutton>
-    <firebase-autoform path="/peliculas" el-id="2"></firebase-autoform>
+
+    <firebase-autoform path="/peliculas" el-id="5"></firebase-autoform>
   </div>
 </body>
 
