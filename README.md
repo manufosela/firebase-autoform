@@ -1,6 +1,6 @@
 # firebase-autoform
 
-Lit-Element web component description
+Generador automático de un formulario para insertar o editar elementos en Firebase a partir de la estructura del json del primero de ellos indicado por un path
 
 ## Demo
 
@@ -20,10 +20,21 @@ Lit-Element web component description
 </custom-element-demo>
 ```
 -->
-```html
-<firebase-autoform></firebase-autoform>
 
+```html
+<!-- EDICIÓN -->
+<firebase-autoform path="/peliculas" el-id="5"></firebase-autoform>
+
+<!-- INSERCIÓN DE NUEVOS ELEMENTOS-->
+<firebase-autoform path="/peliculas"></firebase-autoform>
 ```
+
+## Dependencies
+Is mandatory has login token from firebase.
+You can use [firebase-loginbutton](https://github.com/manufosela/firebase-loginbutton) component to do it.
+
+Yo can use [firebase-autolist](https://github.com/manufosela/firebase-autolist) to show the list of elements to access o edit them.
+
 ## Install the Polymer-CLI
 
 First, make sure you have the [Polymer CLI](https://www.npmjs.com/package/polymer-cli) and npm (packaged with [Node.js](https://nodejs.org)) installed. Run `npm install` to install your element's dependencies, then run `polymer serve` to serve your element locally.
