@@ -537,38 +537,37 @@ export class FirebaseAutoform extends LitElement {
 
   saveSimple() {
     let el = this.shadowRoot.querySelector('#' + this.path.replace('/', ''));
-    let val = el.$.input.value;
-    if (val) {
-      let nextId = parseInt(Object.keys(this.data).pop()) + 1;
-      let newId = firebase.database().ref().child(this.path).push().key;
-      let updates = {};
-      updates[this.path + '/' + newId] = this.data[nextId];
-      firebase.database().ref().update(updates);
-      this.data[nextId] = val;
-      this.log(nextId, newId);
-      this.log(val);
-      this._showMsgPopup('Datos guardados correctamente', this._cleanFields.bind(this));
-    }
+    let val = el.$.input.value || '';
+    let nextId = parseInt(Object.keys(this.data).pop()) + 1;
+    let newId = firebase.database().ref().child(this.path).push().key;
+    let updates = {};
+    updates[this.path + '/' + newId] = this.data[nextId];
+    firebase.database().ref().update(updates);
+    this.data[nextId] = val;
+    this.log(nextId, newId);
+    this.log(val);
+    this._showMsgPopup('Datos guardados correctamente', this._cleanFields.bind(this));
   }
 
   saveComplex() {
+    let data = this._tourElements();
+    this._saveFirebase(data);
+  }
+
+  _tourElements() {
     let data = {};
     for (let i = 0; i < this._arrKeys.length; i++) {
       let el = this.shadowRoot.querySelector('#' + this._arrKeys[i]);
       if (el) {
         let val = (el.$.input) ? el.$.input.value : el.value;
-        if (val) {
-          data[this._arrKeys[i]] = val;
-        }
+        data[this._arrKeys[i]] = (val) ? val : '';
       } else {
         let els = this.shadowRoot.querySelectorAll('[id^=' + this._arrKeys[i] + '_]');
         data[this._arrKeys[i]] = [];
         for (let j = 0; j < els.length; j++) {
           el = els[j];
           let val = (el.$.input) ? el.$.input.value : el.value;
-          if (val) {
-            data[this._arrKeys[i]][j] = val;
-          }
+          data[this._arrKeys[i]][j] = (val) ? val : '';
           this.log('\t' + j + ' = ' + val);
         }
         if (data[this._arrKeys[i]].length === 0) {
@@ -576,8 +575,16 @@ export class FirebaseAutoform extends LitElement {
         }
       }
     }
+    return data;
+  }
+  nada() {
+    // nada
+  }
+
+  _saveFirebase(data) {
     if (Object.keys(data).length !== 0) {
       let nextId = this.elId || parseInt(Object.keys(this.data).pop()) + 1;
+      let callbackFn = (this.elId) ? null : this._cleanFields.bind(this);
       this.data[nextId] = data;
 
       firebase.database().ref(this.path).child(nextId).set(data, (error) => {
@@ -587,7 +594,7 @@ export class FirebaseAutoform extends LitElement {
           this._showMsgPopup(error.message);
           console.log(error);
         } else {
-          this._showMsgPopup('Datos guardados correctamente', this._cleanFields.bind(this));
+          this._showMsgPopup('Datos guardados correctamente', callbackFn);
         }
       });
     }
