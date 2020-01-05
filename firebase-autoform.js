@@ -156,9 +156,8 @@ export class FirebaseAutoform extends LitElement {
     document.addEventListener('firebase-signout', (ev) => {
       this._userLogout(ev);
     });
-    document.addEventListener('firebase-autoform-setid', (ev) => {
-      this._userLogged(ev);
-      this._stopIfAreYouSigin();
+    document.addEventListener('firebase-autoform-selectid', (ev) => {
+      this.elId = ev.detail.id;
     });
     if (!this.user || !this.data) {
       // Si no hay usuario, pregunta si alguien está logado en firebase
