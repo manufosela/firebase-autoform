@@ -75,6 +75,7 @@ export class FirebaseAutoform extends LitElement {
       .slot { margin-right: 10px; font-size: 10px; font-weight: bold; color: #AAA; }
       .waiting { padding: 20px; margin: 20px; font-size: 2rem; }
       .path { margin:0; padding: 20px; font-size: 2rem; color: var(--path-title--color) }
+      .formGroupFlex { display:flex; }
       
       .container {
         display:flex;
@@ -125,6 +126,15 @@ export class FirebaseAutoform extends LitElement {
       paper-button[toggles][active] {
         background: red;
       }
+
+      button {
+        width: 20px;
+        height: 20px;
+        margin-top: 30px;
+        font-size: 12px;
+        font-weight: bold;
+        padding: 0;
+      }
     `;
   }
 
@@ -156,9 +166,11 @@ export class FirebaseAutoform extends LitElement {
     document.addEventListener('firebase-signout', (ev) => {
       this._userLogout(ev);
     });
-    document.addEventListener('firebase-autoform-selectid', (ev) => {
-      this.elId = ev.detail.id;
-    });
+    if (this.elId) {
+      document.addEventListener('firebase-autoform-selectid', (ev) => {
+        this.elId = ev.detail.id;
+      });
+    }
     if (!this.user || !this.data) {
       // Si no hay usuario, pregunta si alguien está logado en firebase
       this.log('Hubo retraso. Intentando detectar si se ha Logado');
@@ -277,10 +289,10 @@ export class FirebaseAutoform extends LitElement {
     return arrFormElements;
   }
 
-  _createFormGroup() {
-    const c = document.createElement('div');
-    c.className = 'formGroup';
-    return c;
+  _createFormGroup(style) {
+    const formGroupLayer = document.createElement('div');
+    formGroupLayer.className = (style === 'flex') ? 'formGroupFlex' : 'formGroup';
+    return formGroupLayer;
   }
 
   _createField(labelId, typeobj) {
@@ -346,8 +358,28 @@ export class FirebaseAutoform extends LitElement {
     ref.once('value')
       .then((snap) => {
         if (!this.shadowRoot.querySelector('#' + labelId)) {
-          this.data[this.elId][labelId].forEach((elVal) => {
-            const container = this._createFormGroup();
+          if (this.elId) {
+            this.data[this.elId][labelId].forEach((elVal, index) => {
+              const container = (index === 0) ? this._createFormGroup('flex') : this._createFormGroup();
+              this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
+              const id = labelId + '_' + this._counter[labelId];
+              const paperDropdownMenu = document.createElement('paper-dropdown-menu');
+              paperDropdownMenu.id = id;
+              paperDropdownMenu.label = labelId;
+              const paperListbox = this._createPaperListBox(snap);
+              paperDropdownMenu.appendChild(paperListbox);
+              container.appendChild(paperDropdownMenu);
+              if (index === 0) {
+                this._addPlusButton(id, container);
+              }
+              if (!this.shadowRoot.querySelector('#' + labelId)) {
+                formGroup.appendChild(container);
+                this.log(elVal);
+                container.querySelector('paper-dropdown-menu').value = elVal;
+              }
+            });
+          } else {
+            const container = this._createFormGroup('flex');
             this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
             const id = labelId + '_' + this._counter[labelId];
             const paperDropdownMenu = document.createElement('paper-dropdown-menu');
@@ -356,19 +388,22 @@ export class FirebaseAutoform extends LitElement {
             const paperListbox = this._createPaperListBox(snap);
             paperDropdownMenu.appendChild(paperListbox);
             const addButton = document.createElement('button');
-            addButton.id = 'btn_' + id;
-            addButton.innerHTML = '+';
-            addButton.addEventListener('click', this._newListMult.bind(this));
             container.appendChild(paperDropdownMenu);
-            container.appendChild(addButton);
+            this._addPlusButton(id, container);
             if (!this.shadowRoot.querySelector('#' + labelId)) {
               formGroup.appendChild(container);
-              this.log(elVal);
-              container.querySelector('paper-dropdown-menu').value = elVal;
             }
-          });
+          }
         }
       });
+  }
+
+  _addPlusButton(id, container) {
+    const addButton = document.createElement('button');
+    addButton.id = 'btn_' + id;
+    addButton.innerHTML = '+';
+    addButton.addEventListener('click', this._newListMult.bind(this));
+    container.appendChild(addButton);
   }
 
   _createPaperListBox(snap) {
