@@ -45,7 +45,7 @@
     <div class="blocks">
       <pre class="block code">
           <code>
-            &lt;firebase-autoform&gt;&lt;/firebase-autoform&gt;
+            &lt;firebase-autoform&gt path="PATH_OF_FIREBASE" el-id="ELEMENT_ID";&lt;/firebase-autoform&gt;
           </code>
         </pre>
       <pre class="block attributes">
@@ -89,7 +89,11 @@
     <firebase-loginbutton api-key="AIzaSyCVpVjyqS9qNcTsTDuQ8qBL1i4VPy5CdpY" domain="coleccion-peliculas"
       messaging-sender-id="852819704247" app-id="1:852819704247:web:9ac0a093401920ed"></firebase-loginbutton>
 
+    <h3>Edit entry ID 5</h3>
     <firebase-autoform path="/peliculas" el-id="5"></firebase-autoform>
+
+    <h3>Add new entry</h3>
+    <firebase-autoform path="/peliculas"></firebase-autoform>
   </div>
 </body>
 

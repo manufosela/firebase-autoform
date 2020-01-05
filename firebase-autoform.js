@@ -275,10 +275,10 @@ export class FirebaseAutoform extends LitElement {
   _createField(labelId, typeobj) {
     const c = this._createFormGroup();
     const hasVal = (this.elId && this.data[this.elId]);
-    const val = this.data[this.elId][labelId];
+    const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
     if (!this.shadowRoot.querySelector('#' + labelId)) {
       c.innerHTML = `
-        <paper-input type="${typeobj}" label="${labelId}" id="${labelId}" value="${(hasVal) ? val : ''}">
+        <paper-input type="${typeobj}" label="${labelId}" id="${labelId}" value="${(hasVal) ? elVal : ''}">
           <div class="slot" slot="prefix">[${typeobj}]</div>
         </paper-input>
       `;
@@ -410,13 +410,14 @@ export class FirebaseAutoform extends LitElement {
     const paperDropdownMenu = document.createElement('paper-dropdown-menu');
     paperDropdownMenu.id = labelId;
     paperDropdownMenu.label = labelId;
-    const elVal = this.data[this.elId][labelId];
+    const hasVal = (this.elId && this.data[this.elId]);
+    const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
     const paperListbox = document.createElement('paper-listbox');
     paperListbox.slot = 'dropdown-content';
     paperListbox.className = 'dropdown-content';
     ref.once('value')
-      .then(function (snap) {
-        snap.forEach(function (item) {
+      .then(function(snap) {
+        snap.forEach(function(item) {
           let itemVal = item.val();
           const paperItem = document.createElement('paper-item');
           paperItem.innerHTML = itemVal;
@@ -559,7 +560,7 @@ export class FirebaseAutoform extends LitElement {
         <div class="container">
           <section>
             <div id="formfieldlayer"></div>    
-            ${this.data !== undefined ? html`<paper-button class="save" raised @click="${this.save}">Save</paper-button>` : html`` }
+            ${this.data !== undefined ? html`<paper-button class="save" raised @click="${this.save}">${(this.elId) ? html`Update [ID ${this.elId}]` : html`Insert new element`}</paper-button>` : html`` }
             <paper-dialog id="mensaje_popup"></paper-dialog>
           </section>
         </div>
