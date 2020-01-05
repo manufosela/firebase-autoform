@@ -156,11 +156,23 @@ export class FirebaseAutoform extends LitElement {
     document.addEventListener('firebase-signout', (ev) => {
       this._userLogout(ev);
     });
-    if (!this.user) {
+    document.addEventListener('firebase-autoform-setid', (ev) => {
+      this._userLogged(ev);
+      this._stopIfAreYouSigin();
+    });
+    if (!this.user || !this.data) {
       // Si no hay usuario, pregunta si alguien está logado en firebase
       this.log('Hubo retraso. Intentando detectar si se ha Logado');
       this.sIntId = setInterval(this._areYouSignin(), 1000);
     }
+  }
+
+  updated(changedProperties) {
+    changedProperties.forEach((oldValue, propName) => {
+      if (propName === 'elId' && this.elId !== oldValue && oldValue !== undefined) {
+        this.getData();
+      }
+    });
   }
 
   _areYouSignin() {
