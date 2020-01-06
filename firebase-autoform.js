@@ -40,6 +40,9 @@ export class FirebaseAutoform extends LitElement {
         type: String,
         attribute: 'el-id'
       },
+      readonly: {
+        type: Boolean
+      },
       data: {
         type: Object
       },
@@ -613,7 +616,7 @@ export class FirebaseAutoform extends LitElement {
         <div class="container">
           <section>
             <div id="formfieldlayer"></div>    
-            ${this.data !== undefined ? html`<paper-button class="save" raised @click="${this.save}">${(this.elId) ? html`Update [ID ${this.elId}]` : html`Insert new element`}</paper-button>` : html`` }
+            ${this.readonly ? html`` : (this.data) !== undefined ? html`<paper-button class="save" raised @click="${this.save}">${(this.elId) ? html`Update [ID ${this.elId}]` : html`Insert new element`}</paper-button>` : html``}
             <paper-dialog id="mensaje_popup"></paper-dialog>
           </section>
         </div>
