@@ -151,7 +151,7 @@ export class FirebaseAutoform extends LitElement {
     this._parentKeys = [];
     this._counter = [];
     this._arrKeys = [];
-    this.bLog = true;
+    this.bLog = false;
   }
 
   log(msg) {
@@ -217,6 +217,9 @@ export class FirebaseAutoform extends LitElement {
         return new Promise(r => {
           this._getFields(this.data[0]);
           this.shadowRoot.querySelector('#spinner').active = false;
+          if (this.elId) {
+            document.dispatchEvent(new CustomEvent('firebase-autoform-ready', { detail: { path: this.path, id: this.elId, obj: this }}));
+          }
           r();
         });
       });

@@ -94,6 +94,13 @@
 
     <h3>Edit entry ID 5</h3>
     <firebase-autoform path="/peliculas" el-id="5"></firebase-autoform>
+    <script>
+      document.addEventListener('firebase-autoform-ready', (ev) => {
+        console.log(ev.detail.path);
+        console.log(ev.detail.id);
+        console.log(ev.detail.obj);
+      });
+    </script>
 
     <h3>Add new entry</h3>
     <firebase-autoform path="/peliculas"></firebase-autoform>
