@@ -170,7 +170,7 @@ export class FirebaseAutoform extends LitElement {
       this._userLogout(ev);
     });
     if (this.elId) {
-      document.addEventListener('firebase-autoform-selectid', (ev) => {
+      document.addEventListener('firebase-autolist-selectid', (ev) => {
         this.elId = ev.detail.id;
       });
     }
