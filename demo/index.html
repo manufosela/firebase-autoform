@@ -56,6 +56,7 @@
               <li>[elId] (String)</li>
               <li>[waiting-msg] (String)</li>
               <li>[readonly] (Boolean)</li>
+              <li>[textarea-fields] (separated comma list)</li>
             </ul>
             <br/><br/>
             <h3>Public Properties</h3>
@@ -93,7 +94,12 @@
       messaging-sender-id="852819704247" app-id="1:852819704247:web:9ac0a093401920ed"></firebase-loginbutton>
 
     <h3>Edit entry ID 5</h3>
-    <firebase-autoform path="/peliculas" el-id="5"></firebase-autoform>
+    <style>
+      #fbaf1 {
+        --fields-max-width: 500px;
+      }
+    </style>
+    <firebase-autoform id="fbaf1" path="/peliculas" el-id="5" textarea-fields="titulo"></firebase-autoform>
     <script>
       document.addEventListener('firebase-autoform-ready', (ev) => {
         console.log(ev.detail.path);

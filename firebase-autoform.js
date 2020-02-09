@@ -6,6 +6,7 @@ import {
 import 'firebase/firebase-database';
 import {} from '@polymer/paper-button/paper-button.js';
 import {} from '@polymer/paper-input/paper-input.js';
+import {} from '@polymer/paper-input/paper-textarea.js';
 import {} from '@polymer/paper-spinner/paper-spinner.js';
 import {} from '@polymer/paper-dialog/paper-dialog.js';
 import {} from '@polymer/paper-item/paper-item.js';
@@ -42,6 +43,10 @@ export class FirebaseAutoform extends LitElement {
       },
       readonly: {
         type: Boolean
+      },
+      textareaFields: {
+        type: String,
+        attribute: 'textarea-fields'
       },
       data: {
         type: Object
@@ -179,6 +184,8 @@ export class FirebaseAutoform extends LitElement {
       this.log('Hubo retraso. Intentando detectar si se ha Logado');
       this.sIntId = setInterval(this._areYouSignin(), 1000);
     }
+
+    this.txtareaFields = (this.textareaFields) ? this.textareaFields.split(',') : [];
   }
 
   updated(changedProperties) {
@@ -306,11 +313,19 @@ export class FirebaseAutoform extends LitElement {
     const hasVal = (this.elId && this.data[this.elId]);
     const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
     if (!this.shadowRoot.querySelector('#' + labelId)) {
-      c.innerHTML = `
-        <paper-input type="${typeobj}" label="${labelId}" id="${labelId}" value="${(hasVal) ? elVal : ''}">
-          <div class="slot" slot="prefix">[${typeobj}]</div>
-        </paper-input>
-      `;
+      if (this.txtareaFields.includes(labelId)) {
+        c.innerHTML = `
+          <paper-textarea rows="3" type="${typeobj}" label="${labelId}" id="${labelId}" value="${(hasVal) ? elVal : ''}">
+            <div class="slot" slot="prefix">[${typeobj}]</div>
+          </paper-textarea>
+        `;
+      } else {
+        c.innerHTML = `
+          <paper-input type="${typeobj}" label="${labelId}" id="${labelId}" value="${(hasVal) ? elVal : ''}">
+            <div class="slot" slot="prefix">[${typeobj}]</div>
+          </paper-input>
+        `;
+      }
     }
     return c;
   }
