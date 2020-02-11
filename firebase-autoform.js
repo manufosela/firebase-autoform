@@ -7,6 +7,7 @@ import 'firebase/firebase-database';
 import {} from '@polymer/paper-button/paper-button.js';
 import {} from '@polymer/paper-input/paper-input.js';
 import {} from '@polymer/paper-input/paper-textarea.js';
+import {} from '@polymer/paper-checkbox/paper-checkbox.js';
 import {} from '@polymer/paper-spinner/paper-spinner.js';
 import {} from '@polymer/paper-dialog/paper-dialog.js';
 import {} from '@polymer/paper-item/paper-item.js';
@@ -84,6 +85,9 @@ export class FirebaseAutoform extends LitElement {
       .waiting { padding: 20px; margin: 20px; font-size: 2rem; }
       .path { margin:0; padding: 20px; font-size: 2rem; color: var(--path-title--color) }
       .formGroupFlex { display:flex; }
+      .chbx-block { margin: 15px 0; }
+      .chbx-block .label { font-size: 0.8rem; }
+      .chbx-block paper-checkbox { margin-left: 4rem; }
       
       .container {
         display:flex;
@@ -275,31 +279,39 @@ export class FirebaseAutoform extends LitElement {
     this._cleanError();
     this._arrKeys = [];
     const arrFormElements = [];
-    for (let k in obj) {
-      if (obj.hasOwnProperty(k)) {
-        let fieldForm;
-        this._arrKeys.push(k);
-        if (typeof obj[k] === 'object' && this._parentKeys.includes(k)) {
-          this.log('multifield multiple ' + k);
-          fieldForm = this._createFormGroup();
-          this._createListMult(k, fieldForm);
-        } else if (this._parentKeys.includes(k)) {
-          fieldForm = this._createFormGroup();
-          this._createList(k, fieldForm);
-          this.log('list ' + k);
-        } else if (typeof obj[k] === 'object') {
-          fieldForm = this._createMF(k, typeof obj[k][0]);
-          this.log('Multifield ' + k);
-        } else if (typeof obj[k] === 'string' || typeof obj[k] === 'number') {
-          fieldForm = this._createField(k, typeof obj[k]);
-          this.log('input ' + k);
-        }
+    for (let keyObj in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, keyObj)) {
+        this._arrKeys.push(keyObj);
+        const fieldForm = this._getFieldForm(obj[keyObj], keyObj);
         if (fieldForm) {
           this.shadowRoot.querySelector('#formfieldlayer').appendChild(fieldForm);
         }
       }
     }
     return arrFormElements;
+  }
+
+  _getFieldForm(propField, labelKey) {
+    let fieldForm;
+    if (typeof propField === 'object' && this._parentKeys.includes(labelKey)) {
+      this.log('multifield multiple ' + labelKey);
+      fieldForm = this._createFormGroup();
+      this._createListMult(labelKey, fieldForm);
+    } else if (this._parentKeys.includes(labelKey)) {
+      fieldForm = this._createFormGroup();
+      this._createList(labelKey, fieldForm);
+      this.log('list ' + labelKey);
+    } else if (typeof propField === 'object') {
+      fieldForm = this._createMF(labelKey, typeof propField[0]);
+      this.log('Multifield ' + labelKey);
+    } else if (propField === true || propField === false) {
+      fieldForm = this._createCheckbox(labelKey);
+      this.log('checkbox ' + labelKey);
+    } else if (typeof propField === 'string' || typeof propField === 'number') {
+      fieldForm = this._createField(labelKey, typeof propField);
+      this.log('input ' + labelKey);
+    }
+    return fieldForm;
   }
 
   _createFormGroup(style) {
@@ -327,6 +339,18 @@ export class FirebaseAutoform extends LitElement {
         `;
       }
     }
+    return c;
+  }
+
+  _createCheckbox(labelId) {
+    const c = this._createFormGroup();
+    const hasVal = (this.elId && this.data[this.elId]);
+    const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
+    const checked = (hasVal) ? ((elVal === true) ? 'checked="true"' : '') : '';
+    const label = labelId.replace(/_/g, ' ');
+    c.innerHTML = `
+      <div class="chbx-block"><div class="label">${label}</div><paper-checkbox label="${labelId}" id="${labelId}" ${checked}"></paper-checkbox></div>
+    `;
     return c;
   }
 
@@ -574,13 +598,20 @@ export class FirebaseAutoform extends LitElement {
     let data = this._tourElements();
     this._saveFirebase(data);
   }
+  _getVal(el) {
+    let val = (el.$.input) ? el.$.input.value : el.value;
+    if (el.tagName === 'PAPER-CHECKBOX') {
+      val = (val === 'on') ? true : false;
+    }
+    return val;
+  }
 
   _tourElements() {
     let data = {};
     for (let i = 0; i < this._arrKeys.length; i++) {
       let el = this.shadowRoot.querySelector('#' + this._arrKeys[i]);
       if (el) {
-        let val = (el.$.input) ? el.$.input.value : el.value;
+        const val = this._getVal(el);
         data[this._arrKeys[i]] = (val) ? val : '';
       } else {
         let els = this.shadowRoot.querySelectorAll('[id^=' + this._arrKeys[i] + '_]');
