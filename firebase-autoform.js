@@ -45,6 +45,14 @@ export class FirebaseAutoform extends LitElement {
       readonly: {
         type: Boolean
       },
+      loggedUser: {
+        type: String,
+        attribute: 'logged-user'
+      },
+      readonlyFields: {
+        type: String,
+        attribute: 'readonly-fields'
+      },
       textareaFields: {
         type: String,
         attribute: 'textarea-fields'
@@ -190,6 +198,7 @@ export class FirebaseAutoform extends LitElement {
     }
 
     this.txtareaFields = (this.textareaFields) ? this.textareaFields.split(',') : [];
+    this.txtroFields = (this.readonlyFields) ? this.readonlyFields.split(',') : [];
   }
 
   updated(changedProperties) {
@@ -226,7 +235,7 @@ export class FirebaseAutoform extends LitElement {
       this.data = snapshot.val();
       this._analizeFields().then(resolve => {
         return new Promise(r => {
-          this._getFields(this.data[0]);
+          this._insertFields(this.data[0]);
           this.shadowRoot.querySelector('#spinner').active = false;
           if (this.elId) {
             document.dispatchEvent(new CustomEvent('firebase-autoform-ready', { detail: { path: this.path, id: this.elId, obj: this }}));
@@ -275,10 +284,21 @@ export class FirebaseAutoform extends LitElement {
       });
   }
 
-  _getFields(obj) {
+  _insertLoggedUser() {
+    const c = this._createFormGroup();
+    const loggedUser = (this.loggedUser !== '') ? this.loggedUser : 'user';
+    c.innerHTML = `
+        <paper-input type="email" label="${loggedUser}" id="edit-user" readonly value="${this.user}"></paper-input>
+      `;
+    this.shadowRoot.querySelector('#formfieldlayer').appendChild(c);
+  }
+
+  _insertFields(obj) {
     this._cleanError();
     this._arrKeys = [];
-    const arrFormElements = [];
+    if (typeof this.loggedUser !== 'undefined') {
+      this._insertLoggedUser();
+    }
     for (let keyObj in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, keyObj)) {
         this._arrKeys.push(keyObj);
@@ -288,7 +308,6 @@ export class FirebaseAutoform extends LitElement {
         }
       }
     }
-    return arrFormElements;
   }
 
   _getFieldForm(propField, labelKey) {
@@ -325,15 +344,17 @@ export class FirebaseAutoform extends LitElement {
     const hasVal = (this.elId && this.data[this.elId]);
     const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
     if (!this.shadowRoot.querySelector('#' + labelId)) {
+      const readOnly = this.txtroFields.includes(labelId) ? 'readonly' : '';
+      const label = labelId + (this.txtroFields.includes(labelId) ? ' [READONLY]' : '');
       if (this.txtareaFields.includes(labelId)) {
         c.innerHTML = `
-          <paper-textarea rows="3" type="${typeobj}" label="${labelId}" id="${labelId}" value="${(hasVal) ? elVal : ''}">
+          <paper-textarea rows="3" type="${typeobj}" label="${label}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
             <div class="slot" slot="prefix">[${typeobj}]</div>
           </paper-textarea>
         `;
       } else {
         c.innerHTML = `
-          <paper-input type="${typeobj}" label="${labelId}" id="${labelId}" value="${(hasVal) ? elVal : ''}">
+          <paper-input type="${typeobj}" label="${labelId}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
             <div class="slot" slot="prefix">[${typeobj}]</div>
           </paper-input>
         `;

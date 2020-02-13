@@ -56,7 +56,9 @@
               <li>[elId] (String)</li>
               <li>[waiting-msg] (String)</li>
               <li>[readonly] (Boolean)</li>
+              <li>[logged-user] (String)</li>
               <li>[textarea-fields] (separated comma list)</li>
+              <li>[readonly-fields] (separated comma list)</li>
             </ul>
             <br/><br/>
             <h3>Public Properties</h3>
@@ -99,7 +101,7 @@
         --fields-max-width: 500px;
       }
     </style>
-    <firebase-autoform id="fbaf1" path="/peliculas" el-id="5" textarea-fields="titulo"></firebase-autoform>
+    <firebase-autoform id="fbaf1" path="/peliculas" el-id="5" textarea-fields="titulo" logged-user="Insertado por" readonly-fields="titulo"></firebase-autoform>
     <script>
       document.addEventListener('firebase-autoform-ready', (ev) => {
         console.log(ev.detail.path);
@@ -109,7 +111,7 @@
     </script>
 
     <h3>Add new entry</h3>
-    <firebase-autoform path="/peliculas"></firebase-autoform>
+    <firebase-autoform path="/peliculas" logged-user="Insertado por"></firebase-autoform>
   </div>
 </body>
 
