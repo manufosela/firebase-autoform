@@ -288,7 +288,7 @@ export class FirebaseAutoform extends LitElement {
     const c = this._createFormGroup();
     const loggedUser = (this.loggedUser !== '') ? this.loggedUser : 'user';
     c.innerHTML = `
-        <paper-input type="email" label="${loggedUser}" id="edit-user" readonly value="${this.user}"></paper-input>
+        <paper-input type="text" label="${loggedUser}" id="edit-user" readonly value="${this.user}"></paper-input>
       `;
     this.shadowRoot.querySelector('#formfieldlayer').appendChild(c);
   }
@@ -648,6 +648,7 @@ export class FirebaseAutoform extends LitElement {
         }
       }
     }
+    data[this.loggedUser.replace(/\s/, '_')] = this.user;
     return data;
   }
   nada() {
