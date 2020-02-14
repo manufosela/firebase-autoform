@@ -346,7 +346,7 @@ export class FirebaseAutoform extends LitElement {
     const hasVal = (this.elId && this.data[this.elId]);
     const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
     if (!this.shadowRoot.querySelector('#' + labelId)) {
-      const readOnly = this.txtroFields.includes(labelId) ? 'readonly' : '';
+      const readOnly = this.txtroFields.includes(labelId) || this.readonly ? 'readonly' : '';
       const label = labelId + (this.txtroFields.includes(labelId) ? ' [READONLY]' : '');
       if (this.txtareaFields.includes(labelId)) {
         c.innerHTML = `
@@ -371,8 +371,9 @@ export class FirebaseAutoform extends LitElement {
     const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
     const checked = (hasVal) ? ((elVal === true) ? 'checked="true"' : '') : '';
     const label = labelId.replace(/_/g, ' ');
+    const readOnly = this.txtroFields.includes(labelId) || this.readonly ? 'readonly' : '';
     c.innerHTML = `
-      <div class="chbx-block"><div class="label">${label}</div><paper-checkbox label="${labelId}" id="${labelId}" ${checked}"></paper-checkbox></div>
+      <div class="chbx-block"><div class="label">${label}</div><paper-checkbox label="${labelId}" id="${labelId}" ${checked} ${readOnly}"></paper-checkbox></div>
     `;
     return c;
   }
@@ -388,8 +389,9 @@ export class FirebaseAutoform extends LitElement {
     this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
 
     const id = labelId + '_' + this._counter[labelId];
+    const readOnly = this.txtroFields.includes(labelId) || this.readonly ? 'readonly' : '';
     c.innerHTML = `
-      <paper-input type="${typeobj}" label="${labelId}" id="${id}" class="inlineblock">
+      <paper-input type="${typeobj}" label="${labelId}" id="${id}" class="inlineblock" ${readOnly}>
         <div class="slot" slot="prefix">[${typeobj}]</div>
         <div class="slot" slot="suffix">${this._counter[labelId]}</div>
       </paper-input>`;
@@ -411,8 +413,9 @@ export class FirebaseAutoform extends LitElement {
     const c = this._createFormGroup();
     if (!this.shadowRoot.querySelector('#' + labelId)) {
       const id = labelId + '_' + this._counter[labelId];
+      const readOnly = this.txtroFields.includes(labelId) || this.readonly ? 'readonly' : '';
       c.innerHTML = `
-        <paper-input type="${typeobj}" label="${labelId}" id="${id}" class="inlineblock">
+        <paper-input type="${typeobj}" label="${labelId}" id="${id}" class="inlineblock" ${readOnly}>
           <div class="slot" slot="prefix">[${typeobj}]</div>
           <div class="slot" slot="suffix">${this._counter[labelId]}</div>
         </paper-input>`;
