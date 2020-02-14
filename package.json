@@ -1,7 +1,7 @@
 {
   "name": "firebase-autoform",
   "description": "Lit-Element webcomponent firebase-autoform",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "main": "firebase-autoform.js",
   "repository": {
     "type": "git",

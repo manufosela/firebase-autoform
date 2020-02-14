@@ -290,7 +290,9 @@ export class FirebaseAutoform extends LitElement {
     c.innerHTML = `
         <paper-input type="text" label="${loggedUser}" id="edit-user" readonly value="${this.user}"></paper-input>
       `;
-    this.shadowRoot.querySelector('#formfieldlayer').appendChild(c);
+    if (!this.shadowRoot.querySelector('#edit-user')) {
+      this.shadowRoot.querySelector('#formfieldlayer').appendChild(c);
+    }
   }
 
   _insertFields(obj) {
@@ -648,7 +650,6 @@ export class FirebaseAutoform extends LitElement {
         }
       }
     }
-    data[this.loggedUser.replace(/\s/, '_')] = this.user;
     return data;
   }
   nada() {
@@ -660,6 +661,9 @@ export class FirebaseAutoform extends LitElement {
       let nextId = this.elId || parseInt(Object.keys(this.data).pop()) + 1;
       let callbackFn = (this.elId) ? null : this._cleanFields.bind(this);
       this.data[nextId] = data;
+      if (this.loggedUser !== '') {
+        data[this.loggedUser.replace(/\s/, '_')] = this.user;
+      }
 
       firebase.database().ref(this.path).child(nextId).set(data, (error) => {
         this.log(nextId);
