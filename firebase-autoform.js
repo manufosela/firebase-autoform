@@ -155,6 +155,10 @@ export class FirebaseAutoform extends LitElement {
         font-weight: bold;
         padding: 0;
       }
+      .hidden {
+        visibility:hidden;
+        display:none;
+      }
     `;
   }
 
@@ -169,6 +173,7 @@ export class FirebaseAutoform extends LitElement {
     this._counter = [];
     this._arrKeys = [];
     this.bLog = false;
+    this.loggedUser = '';
   }
 
   log(msg) {
@@ -284,11 +289,13 @@ export class FirebaseAutoform extends LitElement {
       });
   }
 
-  _insertLoggedUser() {
+  _insertLoggedUser(obj) {
     const c = this._createFormGroup();
-    const loggedUser = (this.loggedUser !== '') ? this.loggedUser : 'user';
+    const loggedUser = (this.loggedUser !== '') ? this.loggedUser : 'logged-user';
+    const user = (obj.edit_user) ? obj.edit_user : this.user;
+    const cssClass = (this.loggedUser !== '') ? '' : 'class="hidden"';
     c.innerHTML = `
-        <paper-input type="text" label="${loggedUser}" id="edit-user" readonly value="${this.user}"></paper-input>
+        <paper-input type="text" label="${loggedUser}" id="edit-user" readonly value="${user}" ${cssClass}></paper-input>
       `;
     if (!this.shadowRoot.querySelector('#edit-user')) {
       this.shadowRoot.querySelector('#formfieldlayer').appendChild(c);
@@ -298,15 +305,15 @@ export class FirebaseAutoform extends LitElement {
   _insertFields(obj) {
     this._cleanError();
     this._arrKeys = [];
-    if (typeof this.loggedUser !== 'undefined') {
-      this._insertLoggedUser();
-    }
+    this._insertLoggedUser(obj);
     for (let keyObj in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, keyObj)) {
         this._arrKeys.push(keyObj);
-        const fieldForm = this._getFieldForm(obj[keyObj], keyObj);
-        if (fieldForm) {
-          this.shadowRoot.querySelector('#formfieldlayer').appendChild(fieldForm);
+        if (keyObj !== 'edit_user') {
+          const fieldForm = this._getFieldForm(obj[keyObj], keyObj);
+          if (fieldForm) {
+            this.shadowRoot.querySelector('#formfieldlayer').appendChild(fieldForm);
+          }
         }
       }
     }
@@ -655,18 +662,13 @@ export class FirebaseAutoform extends LitElement {
     }
     return data;
   }
-  nada() {
-    // nada
-  }
 
   _saveFirebase(data) {
     if (Object.keys(data).length !== 0) {
       let nextId = this.elId || parseInt(Object.keys(this.data).pop()) + 1;
       let callbackFn = (this.elId) ? null : this._cleanFields.bind(this);
+      data.edit_user = this.user;
       this.data[nextId] = data;
-      if (this.loggedUser !== '') {
-        data[this.loggedUser.replace(/\s/, '_')] = this.user;
-      }
 
       firebase.database().ref(this.path).child(nextId).set(data, (error) => {
         this.log(nextId);
