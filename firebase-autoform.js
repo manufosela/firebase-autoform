@@ -292,7 +292,7 @@ export class FirebaseAutoform extends LitElement {
   _insertLoggedUser(obj) {
     const c = this._createFormGroup();
     const loggedUser = (this.loggedUser !== '') ? this.loggedUser : 'logged-user';
-    const user = (obj.edit_user) ? obj.edit_user : this.user;
+    const user = (this.elId) ? Object.keys(this.data[this.elId]).includes('edit_user') ? this.data[this.elId].edit_user : this.user : this.user;
     const cssClass = (this.loggedUser !== '') ? '' : 'class="hidden"';
     c.innerHTML = `
         <paper-input type="text" label="${loggedUser}" id="edit-user" readonly value="${user}" ${cssClass}></paper-input>
