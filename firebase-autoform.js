@@ -13,6 +13,7 @@ import {} from '@polymer/paper-dialog/paper-dialog.js';
 import {} from '@polymer/paper-item/paper-item.js';
 import {} from '@polymer/paper-dropdown-menu/paper-dropdown-menu.js';
 import {} from '@polymer/paper-listbox/paper-listbox.js';
+import {} from 'firebase-uploadfile/firebase-uploadfile.js';
 
 /**
  * `firebase-autoform`
@@ -50,12 +51,13 @@ export class FirebaseAutoform extends LitElement {
         attribute: 'logged-user'
       },
       readonlyFields: {
-        type: String,
-        attribute: 'readonly-fields'
+        type: Array
       },
       textareaFields: {
-        type: String,
-        attribute: 'textarea-fields'
+        type: Array
+      },
+      fileuploadFields: {
+        type: Array
       },
       data: {
         type: Object
@@ -186,7 +188,6 @@ export class FirebaseAutoform extends LitElement {
     super.connectedCallback();
     document.addEventListener('firebase-signin', (ev) => {
       this._userLogged(ev);
-      this._stopIfAreYouSigin();
     });
     document.addEventListener('firebase-signout', (ev) => {
       this._userLogout(ev);
@@ -196,14 +197,28 @@ export class FirebaseAutoform extends LitElement {
         this.elId = ev.detail.id;
       });
     }
-    if (!this.user || !this.data) {
-      // Si no hay usuario, pregunta si alguien está logado en firebase
-      this.log('Hubo retraso. Intentando detectar si se ha Logado');
-      this.sIntId = setInterval(this._areYouSignin(), 1000);
-    }
+    const firebaseAreYouLoggedEvent = new Event('firebase-are-you-logged'); // (2)
+    document.dispatchEvent(firebaseAreYouLoggedEvent);
 
-    this.txtareaFields = (this.textareaFields) ? this.textareaFields.split(',') : [];
-    this.txtroFields = (this.readonlyFields) ? this.readonlyFields.split(',') : [];
+    this.textareaFields = (this.querySelector('textarea-fields')) ? this.querySelector('textarea-fields').innerText.replace(/[\n\s]*/g, '').split(',') : [];
+    this.readonlyFields = (this.querySelector('readonly-fields')) ? this.querySelector('readonly-fields').innerText.replace(/[\n\s]*/g, '').split(',') : [];
+    this.fileuploadFields = (this.querySelector('fileupload-fields')) ? this.querySelector('fileupload-fields').innerText.replace(/[\n\s]*/g, '').split(',') : [];
+    if (this.fileuploadFields.length > 0) {
+      document.addEventListener('firebase-file-storage-uploaded', (ev) => {
+        const name = ev.detail.name;
+        this.shadowRoot.querySelector('[name="' + name + '"').value = ev.detail.downloadURL;
+      });
+    }
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener('firebase-signin', (ev) => {
+      this._userLogged(ev);
+    });
+    document.removeEventListener('firebase-signout', (ev) => {
+      this._userLogout(ev);
+    });
   }
 
   updated(changedProperties) {
@@ -214,24 +229,17 @@ export class FirebaseAutoform extends LitElement {
     });
   }
 
-  _areYouSignin() {
-    document.dispatchEvent(new CustomEvent('firebase-are-you-signin'));
-    this.log('intento de busqueda si está logado');
-  }
-
   _userLogged(obj) {
-    this.user = obj.detail.user.displayName;
-    this.dataUser = obj.detail.user;
-    this.getData();
+    if (!this.user && obj.detail.user) {
+      this.user = obj.detail.user.displayName;
+      this.dataUser = obj.detail.user;
+      this.getData();
+    }
   }
 
-  _userLogout(obj) {
+  _userLogout() {
     this.dataUser = null;
     this.data = null;
-  }
-
-  _stopIfAreYouSigin() {
-    this.sIntId = null;
   }
 
   getData() {
@@ -348,26 +356,36 @@ export class FirebaseAutoform extends LitElement {
     return formGroupLayer;
   }
 
-  _createField(labelId, typeobj) {
-    const c = this._createFormGroup();
+  _getHTMLTag(labelId, typeobj) {
     const hasVal = (this.elId && this.data[this.elId]);
     const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
+    const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
+    const label = labelId + (this.readonlyFields.includes(labelId) ? ' [READONLY]' : '');
+    let HTMLTag;
+    if (this.textareaFields.includes(labelId)) {
+      HTMLTag = `
+        <paper-textarea rows="3" type="${typeobj}" label="${label}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
+          <div class="slot" slot="prefix">[${typeobj}]</div>
+        </paper-textarea>
+      `;
+    } else if (this.fileuploadFields.includes(labelId)) {
+      HTMLTag = `
+        <firebase-uploadfile id="${labelId}" name="caratula" path="/caratulas" storage-name="NAME,FILENAME" ${(hasVal) ? `value="${elVal}"` : ''}></firebase-uploadfile>
+      `;
+    } else {
+      HTMLTag = `
+        <paper-input type="${typeobj}" label="${labelId}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
+          <div class="slot" slot="prefix">[${typeobj}]</div>
+        </paper-input>
+      `;
+    }
+    return HTMLTag;
+  }
+
+  _createField(labelId, typeobj) {
+    const c = this._createFormGroup();
     if (!this.shadowRoot.querySelector('#' + labelId)) {
-      const readOnly = this.txtroFields.includes(labelId) || this.readonly ? 'readonly' : '';
-      const label = labelId + (this.txtroFields.includes(labelId) ? ' [READONLY]' : '');
-      if (this.txtareaFields.includes(labelId)) {
-        c.innerHTML = `
-          <paper-textarea rows="3" type="${typeobj}" label="${label}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
-            <div class="slot" slot="prefix">[${typeobj}]</div>
-          </paper-textarea>
-        `;
-      } else {
-        c.innerHTML = `
-          <paper-input type="${typeobj}" label="${labelId}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
-            <div class="slot" slot="prefix">[${typeobj}]</div>
-          </paper-input>
-        `;
-      }
+      c.innerHTML = this._getHTMLTag(labelId, typeobj);
     }
     return c;
   }
@@ -378,7 +396,7 @@ export class FirebaseAutoform extends LitElement {
     const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
     const checked = (hasVal) ? ((elVal === true) ? 'checked="true"' : '') : '';
     const label = labelId.replace(/_/g, ' ');
-    const readOnly = this.txtroFields.includes(labelId) || this.readonly ? 'readonly' : '';
+    const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
     c.innerHTML = `
       <div class="chbx-block"><div class="label">${label}</div><paper-checkbox label="${labelId}" id="${labelId}" ${checked} ${readOnly}"></paper-checkbox></div>
     `;
@@ -396,7 +414,7 @@ export class FirebaseAutoform extends LitElement {
     this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
 
     const id = labelId + '_' + this._counter[labelId];
-    const readOnly = this.txtroFields.includes(labelId) || this.readonly ? 'readonly' : '';
+    const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
     c.innerHTML = `
       <paper-input type="${typeobj}" label="${labelId}" id="${id}" class="inlineblock" ${readOnly}>
         <div class="slot" slot="prefix">[${typeobj}]</div>
@@ -420,7 +438,7 @@ export class FirebaseAutoform extends LitElement {
     const c = this._createFormGroup();
     if (!this.shadowRoot.querySelector('#' + labelId)) {
       const id = labelId + '_' + this._counter[labelId];
-      const readOnly = this.txtroFields.includes(labelId) || this.readonly ? 'readonly' : '';
+      const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
       c.innerHTML = `
         <paper-input type="${typeobj}" label="${labelId}" id="${id}" class="inlineblock" ${readOnly}>
           <div class="slot" slot="prefix">[${typeobj}]</div>
@@ -562,11 +580,11 @@ export class FirebaseAutoform extends LitElement {
 
   _showError(msg) {
     this.shadowRoot.querySelector('#formfieldlayer').innerHTML = '';
-    let arrMsg = {
+    const arrMsg = {
       nopath: 'Path <span class="path">' + this.path + '</span> doesn\'t exists',
       none: ''
     };
-    let d = (!this.shadowRoot.querySelector('.error_msg')) ? document.createElement('div') : this.shadowRoot.querySelector('.error_msg');
+    const d = (!this.shadowRoot.querySelector('.error_msg')) ? document.createElement('div') : this.shadowRoot.querySelector('.error_msg');
     d.className = 'error_msg';
     d.innerHTML = arrMsg[msg];
     if (!this.shadowRoot.querySelector('.error_msg')) {
@@ -584,7 +602,7 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _cleanError() {
-    let errmsg = this.shadowRoot.querySelector('.error_msg');
+    const errmsg = this.shadowRoot.querySelector('.error_msg');
     if (errmsg) {
       errmsg.remove();
     }
@@ -614,11 +632,11 @@ export class FirebaseAutoform extends LitElement {
   }
 
   saveSimple() {
-    let el = this.shadowRoot.querySelector('#' + this.path.replace('/', ''));
-    let val = el.$.input.value || '';
-    let nextId = parseInt(Object.keys(this.data).pop()) + 1;
-    let newId = firebase.database().ref().child(this.path).push().key;
-    let updates = {};
+    const el = this.shadowRoot.querySelector('#' + this.path.replace('/', ''));
+    const val = el.$.input.value || '';
+    const nextId = parseInt(Object.keys(this.data).pop()) + 1;
+    const newId = firebase.database().ref().child(this.path).push().key;
+    const updates = {};
     updates[this.path + '/' + newId] = this.data[nextId];
     firebase.database().ref().update(updates);
     this.data[nextId] = val;
@@ -628,11 +646,11 @@ export class FirebaseAutoform extends LitElement {
   }
 
   saveComplex() {
-    let data = this._tourElements();
+    const data = this._tourElements();
     this._saveFirebase(data);
   }
   _getVal(el) {
-    let val = (el.$.input) ? el.$.input.value : el.value;
+    let val = (el.tagName === 'FIREBASE-UPLOADFILE') ? el.value : (el.$.input) ? el.$.input.value : el.value;
     if (el.tagName === 'PAPER-CHECKBOX') {
       val = (val === 'on') ? true : false;
     }
@@ -647,11 +665,11 @@ export class FirebaseAutoform extends LitElement {
         const val = this._getVal(el);
         data[this._arrKeys[i]] = (val) ? val : '';
       } else {
-        let els = this.shadowRoot.querySelectorAll('[id^=' + this._arrKeys[i] + '_]');
+        const els = this.shadowRoot.querySelectorAll('[id^=' + this._arrKeys[i] + '_]');
         data[this._arrKeys[i]] = [];
         for (let j = 0; j < els.length; j++) {
           el = els[j];
-          let val = (el.$.input) ? el.$.input.value : el.value;
+          const val = (el.$.input) ? el.$.input.value : el.value;
           data[this._arrKeys[i]][j] = (val) ? val : '';
           this.log('\t' + j + ' = ' + val);
         }

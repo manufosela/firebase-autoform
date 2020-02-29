@@ -1,7 +1,7 @@
 {
   "name": "firebase-autoform",
   "description": "Lit-Element webcomponent firebase-autoform",
-  "version": "1.7.6",
+  "version": "1.7.7",
   "main": "firebase-autoform.js",
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
     "@polymer/paper-listbox": "^3.0.1",
     "@polymer/paper-spinner": "^3.0.2",
     "firebase": "^6.6.2",
+    "firebase-uploadfile": "^1.2.5",
     "lit-element": "^2.1.0"
   },
   "devDependencies": {
@@ -34,7 +35,7 @@
     "@babel/plugin-proposal-class-properties": "^7.7.4",
     "@babel/plugin-proposal-decorators": "^7.7.4",
     "@webcomponents/webcomponentsjs": "^2.4.0",
-    "firebase-loginbutton": "^2.3.2",
+    "firebase-loginbutton": "^2.3.5",
     "rollup": "^1.28.0",
     "rollup-plugin-babel": "^4.3.0",
     "rollup-plugin-node-resolve": "^4.0.0"

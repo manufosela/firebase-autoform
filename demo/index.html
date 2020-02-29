@@ -101,12 +101,16 @@
         --fields-max-width: 500px;
       }
     </style>
-    <firebase-autoform id="fbaf1" path="/peliculas" el-id="5" textarea-fields="titulo" logged-user="Insertado por" readonly-fields="titulo"></firebase-autoform>
+    <firebase-autoform id="fbaf1" path="/peliculas" el-id="6"  logged-user="Insertado por">
+      <textarea-fields>titulo</textarea-fields>
+      <readonly-fields>titulo</readonly-fields>
+      <fileupload-fields>caratula</uploadfile-fields>
+    </firebase-autoform>
     <script>
       document.addEventListener('firebase-autoform-ready', (ev) => {
         console.log(ev.detail.path);
         console.log(ev.detail.id);
-        console.log(ev.detail.obj);
+        //console.log(ev.detail.obj);
       });
     </script>
 
