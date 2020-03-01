@@ -370,7 +370,7 @@ export class FirebaseAutoform extends LitElement {
       `;
     } else if (this.fileuploadFields.includes(labelId)) {
       HTMLTag = `
-        <firebase-uploadfile id="${labelId}" name="caratula" path="/caratulas" storage-name="NAME,FILENAME" ${(hasVal) ? `value="${elVal}"` : ''}></firebase-uploadfile>
+        <firebase-uploadfile id="${labelId}" name="${labelId}" path="/uploadedFiles" storage-name="NAME,FILENAME" ${(hasVal) ? `value="${elVal}"` : ''}></firebase-uploadfile>
       `;
     } else {
       HTMLTag = `
