@@ -367,8 +367,8 @@ export class FirebaseAutoform extends LitElement {
     const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
     const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
     const labelIdParts = labelId.split('_');
-    const id = labelIdParts[labelIdParts.length - 1];
-    const label = id + (this.readonlyFields.includes(labelId) ? ' [READONLY]' : '');
+    const labelShown = labelIdParts[labelIdParts.length - 1];
+    const label = labelShown + (this.readonlyFields.includes(labelId) ? ' [READONLY]' : '');
     let HTMLTag;
     if (this.textareaFields.includes(labelId)) {
       HTMLTag = `
@@ -378,7 +378,7 @@ export class FirebaseAutoform extends LitElement {
       `;
     } else if (this.fileuploadFields.includes(labelId)) {
       HTMLTag = `
-        <firebase-uploadfile id="${labelId}" name="${labelId}" path="/uploadedFiles" storage-name="NAME,FILENAME" ${(hasVal) ? `value="${elVal}"` : ''}></firebase-uploadfile>
+        <firebase-uploadfile id="${labelId}" name="${label}" path="/uploadedFiles" storage-name="NAME,FILENAME" ${(hasVal) ? `value="${elVal}"` : ''}></firebase-uploadfile>
       `;
     } else {
       HTMLTag = `
@@ -470,6 +470,7 @@ export class FirebaseAutoform extends LitElement {
               const paperDropdownMenu = document.createElement('paper-dropdown-menu');
               paperDropdownMenu.id = id;
               paperDropdownMenu.label = labelId;
+
               const paperListbox = this._createPaperListBox(snap);
               paperDropdownMenu.appendChild(paperListbox);
               container.appendChild(paperDropdownMenu);
@@ -488,7 +489,9 @@ export class FirebaseAutoform extends LitElement {
             const id = labelId + '_' + this._counter[labelId];
             const paperDropdownMenu = document.createElement('paper-dropdown-menu');
             paperDropdownMenu.id = id;
-            paperDropdownMenu.label = labelId;
+            const labelIdParts = labelId.split('_');
+            const labelShown = labelIdParts[labelIdParts.length - 1];
+            paperDropdownMenu.label = labelShown;
             const paperListbox = this._createPaperListBox(snap);
             paperDropdownMenu.appendChild(paperListbox);
             const addButton = document.createElement('button');
@@ -532,7 +535,9 @@ export class FirebaseAutoform extends LitElement {
     const ref = firebase.database().ref('/' + labelId);
     const paperDropdownMenu = document.createElement('paper-dropdown-menu');
     paperDropdownMenu.id = id;
-    paperDropdownMenu.label = labelId;
+    const labelIdParts = labelId.split('_');
+    const labelShown = labelIdParts[labelIdParts.length - 1];
+    paperDropdownMenu.label = labelShown;
     const paperListbox = document.createElement('paper-listbox');
     paperListbox.slot = 'dropdown-content';
     paperListbox.className = 'dropdown-content';
@@ -559,7 +564,9 @@ export class FirebaseAutoform extends LitElement {
     const ref = firebase.database().ref('/' + labelId);
     const paperDropdownMenu = document.createElement('paper-dropdown-menu');
     paperDropdownMenu.id = labelId;
-    paperDropdownMenu.label = labelId;
+    const labelIdParts = labelId.split('_');
+    const labelShown = labelIdParts[labelIdParts.length - 1];
+    paperDropdownMenu.label = labelShown;
     const hasVal = (this.elId && this.data[this.elId]);
     const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
     const paperListbox = document.createElement('paper-listbox');
