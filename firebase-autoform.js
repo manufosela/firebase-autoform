@@ -251,7 +251,13 @@ export class FirebaseAutoform extends LitElement {
           this._insertFields(this.data[0]);
           this.shadowRoot.querySelector('#spinner').active = false;
           if (this.elId) {
-            document.dispatchEvent(new CustomEvent('firebase-autoform-ready', { detail: { path: this.path, id: this.elId, obj: this }}));
+            document.dispatchEvent(new CustomEvent('firebase-autoform-ready', {
+              detail: {
+                path: this.path,
+                id: this.elId,
+                obj: this
+              }
+            }));
           }
           r();
         });
@@ -270,7 +276,7 @@ export class FirebaseAutoform extends LitElement {
         } else {
           this._simple = true;
           this._cleanError();
-          let k = [ this.path.replace('/', '') ];
+          let k = [this.path.replace('/', '')];
           this.shadowRoot.querySelector('#spinner').active = false;
           let fieldForm = this._createField(k, typeof this.data[0]);
           this.shadowRoot.querySelector('#formfieldlayer').appendChild(fieldForm);
@@ -286,7 +292,7 @@ export class FirebaseAutoform extends LitElement {
     let counts = [];
     ref.once('value')
       .then(snap => {
-        snap.forEach(function(item) {
+        snap.forEach(function (item) {
           let itemVal = item.val();
           let itemKey = item.key;
           keys.push(itemKey);
@@ -360,7 +366,9 @@ export class FirebaseAutoform extends LitElement {
     const hasVal = (this.elId && this.data[this.elId]);
     const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
     const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
-    const label = labelId + (this.readonlyFields.includes(labelId) ? ' [READONLY]' : '');
+    const labelIdParts = labelId.split('_');
+    const id = labelIdParts[labelIdParts.length - 1];
+    const label = id + (this.readonlyFields.includes(labelId) ? ' [READONLY]' : '');
     let HTMLTag;
     if (this.textareaFields.includes(labelId)) {
       HTMLTag = `
@@ -374,7 +382,7 @@ export class FirebaseAutoform extends LitElement {
       `;
     } else {
       HTMLTag = `
-        <paper-input type="${typeobj}" label="${labelId}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
+        <paper-input type="${typeobj}" label="${label}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
           <div class="slot" slot="prefix">[${typeobj}]</div>
         </paper-input>
       `;
@@ -530,8 +538,8 @@ export class FirebaseAutoform extends LitElement {
     paperListbox.className = 'dropdown-content';
     const container = this._createFormGroup();
     ref.once('value')
-      .then(function(snap) {
-        snap.forEach(function(item) {
+      .then(function (snap) {
+        snap.forEach(function (item) {
           const itemVal = item.val();
           const paperItem = document.createElement('paper-item');
           paperItem.innerHTML = itemVal;
@@ -558,8 +566,8 @@ export class FirebaseAutoform extends LitElement {
     paperListbox.slot = 'dropdown-content';
     paperListbox.className = 'dropdown-content';
     ref.once('value')
-      .then(function(snap) {
-        snap.forEach(function(item) {
+      .then(function (snap) {
+        snap.forEach(function (item) {
           let itemVal = item.val();
           const paperItem = document.createElement('paper-item');
           paperItem.innerHTML = itemVal;
@@ -702,7 +710,7 @@ export class FirebaseAutoform extends LitElement {
   }
 
   render() {
-    return html`
+    return html `
       ${this.dataUser !== null ? html` 
         <h3 class='path'>
           ${this.path.replace(/^\//, '')} 
