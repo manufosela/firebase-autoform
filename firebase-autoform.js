@@ -376,7 +376,7 @@ export class FirebaseAutoform extends LitElement {
           <div class="slot" slot="prefix">[${typeobj}]</div>
         </paper-textarea>
       `;
-    } else if (this.fileuploadFields.includes(labelId)) {
+    } else if (this.fileuploadFields.includes(labelIdParts[labelIdParts.length - 1])) {
       HTMLTag = `
         <firebase-uploadfile id="${labelId}" name="${label}" path="/uploadedFiles" storage-name="NAME,FILENAME" ${(hasVal) ? `value="${elVal}"` : ''}></firebase-uploadfile>
       `;
