@@ -17,7 +17,7 @@ import {} from 'firebase-uploadfile/firebase-uploadfile.js';
 
 /**
  * `firebase-autoform`
- * FirebaseAutoform
+ * FirebaseAutoform v1.8.4
  *
  * @customElement firebase-autoform
  * @polymer
