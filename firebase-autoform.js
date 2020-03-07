@@ -303,10 +303,29 @@ export class FirebaseAutoform extends LitElement {
       });
   }
 
+  _getLoggedUser() {
+    let user;
+    if (this.elId) {
+      if (Object.keys(this.data[this.elId]).includes('__edit_user')) {
+        if (this.data[this.elId].__edit_user !== '') {
+          user = this.data[this.elId].__edit_user;
+        } else {
+          user = this.user;
+        }
+      } else {
+        this.data[this.elId].__edit_user = this.user;
+        user = this.user;
+      }
+    } else {
+      user = this.user;
+    }
+    return user;
+  }
+
   _insertLoggedUser(obj) {
     const c = this._createFormGroup();
     const loggedUser = (this.loggedUser !== '') ? this.loggedUser : 'logged-user';
-    const user = (this.elId) ? Object.keys(this.data[this.elId]).includes('__edit_user') ? this.data[this.elId].__edit_user : this.user : this.user;
+    const user = this._getLoggedUser();
     const cssClass = (this.loggedUser !== '') ? '' : 'class="hidden"';
     c.innerHTML = `
         <paper-input type="text" label="${loggedUser}" id="__edit_user" readonly value="${user}" ${cssClass}></paper-input>
@@ -362,27 +381,34 @@ export class FirebaseAutoform extends LitElement {
     return formGroupLayer;
   }
 
+  _getLabels(labelId) {
+    const labelIdParts = labelId.split(',');
+    const labelShown = labelIdParts[labelIdParts.length - 1];
+    const labelCleanId = labelShown.replace(/_/g, ' ');
+    return [labelShown, labelCleanId];
+  }
+
   _getHTMLTag(labelId, typeobj) {
     const hasVal = (this.elId && this.data[this.elId][labelId]);
     const elVal = (hasVal) ? this.data[this.elId][labelId].replace(/"/g, '&#34;') : '';
     const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
-    const labelIdParts = labelId.split(',');
-    const labelShown = labelIdParts[labelIdParts.length - 1].replace(/_/g, ' ');
-    const label = labelShown + (this.readonlyFields.includes(labelId) ? ' [READONLY]' : '');
+    const [labelShown, labelCleanId] = this._getLabels(labelId);
+
+    const label = labelShown + (this.readonlyFields.includes(labelShown) ? ' [READONLY]' : '');
     let HTMLTag;
-    if (this.textareaFields.includes(labelIdParts[labelIdParts.length - 1])) {
+    if (this.textareaFields.includes(labelCleanId)) {
       HTMLTag = `
-        <paper-textarea rows="3" type="${typeobj}" label="${label}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
+        <paper-textarea rows="3" type="${typeobj}" label="${labelCleanId}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
           <div class="slot" slot="prefix">[${typeobj}]</div>
         </paper-textarea>
       `;
-    } else if (this.fileuploadFields.includes(labelIdParts[labelIdParts.length - 1])) {
+    } else if (this.fileuploadFields.includes(labelShown)) {
       HTMLTag = `
-        <firebase-uploadfile id="${labelId}" name="${label}" path="/uploadedFiles" storage-name="NAME,FILENAME" ${(hasVal) ? `value="${elVal}"` : ''}></firebase-uploadfile>
+        <firebase-uploadfile id="${labelId}" name="${labelCleanId}" path="/uploadedFiles" storage-name="NAME,FILENAME" ${(hasVal) ? `value="${elVal}"` : ''}></firebase-uploadfile>
       `;
     } else {
       HTMLTag = `
-        <paper-input type="${typeobj}" label="${label}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
+        <paper-input type="${typeobj}" label="${labelCleanId}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
           <div class="slot" slot="prefix">[${typeobj}]</div>
         </paper-input>
       `;
@@ -489,12 +515,10 @@ export class FirebaseAutoform extends LitElement {
             const id = labelId + '_' + this._counter[labelId];
             const paperDropdownMenu = document.createElement('paper-dropdown-menu');
             paperDropdownMenu.id = id;
-            const labelIdParts = labelId.split('_');
-            const labelShown = labelIdParts[labelIdParts.length - 1];
-            paperDropdownMenu.label = labelShown;
+            const [labelShown, labelCleanId] = this._getLabels(labelId);
+            paperDropdownMenu.label = labelCleanId;
             const paperListbox = this._createPaperListBox(snap);
             paperDropdownMenu.appendChild(paperListbox);
-            const addButton = document.createElement('button');
             container.appendChild(paperDropdownMenu);
             this._addPlusButton(id, container);
             if (!this.shadowRoot.querySelector('#' + labelId)) {
@@ -535,9 +559,8 @@ export class FirebaseAutoform extends LitElement {
     const ref = firebase.database().ref('/' + labelId);
     const paperDropdownMenu = document.createElement('paper-dropdown-menu');
     paperDropdownMenu.id = id;
-    const labelIdParts = labelId.split('_');
-    const labelShown = labelIdParts[labelIdParts.length - 1];
-    paperDropdownMenu.label = labelShown;
+    const [labelShown, labelCleanId] = this._getLabels(labelId);
+    paperDropdownMenu.label = labelCleanId;
     const paperListbox = document.createElement('paper-listbox');
     paperListbox.slot = 'dropdown-content';
     paperListbox.className = 'dropdown-content';
@@ -564,9 +587,8 @@ export class FirebaseAutoform extends LitElement {
     const ref = firebase.database().ref('/' + labelId);
     const paperDropdownMenu = document.createElement('paper-dropdown-menu');
     paperDropdownMenu.id = labelId;
-    const labelIdParts = labelId.split('_');
-    const labelShown = labelIdParts[labelIdParts.length - 1];
-    paperDropdownMenu.label = labelShown;
+    const [labelShown, labelCleanId] = this._getLabels(labelId);
+    paperDropdownMenu.label = labelCleanId;
     const hasVal = (this.elId && this.data[this.elId]);
     const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
     const paperListbox = document.createElement('paper-listbox');
