@@ -364,7 +364,7 @@ export class FirebaseAutoform extends LitElement {
 
   _getHTMLTag(labelId, typeobj) {
     const hasVal = (this.elId && this.data[this.elId]);
-    const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
+    const elVal = (hasVal) ? this.data[this.elId][labelId].replace(/"/g, '&#34;') : '';
     const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
     const labelIdParts = labelId.split('_');
     const labelShown = labelIdParts[labelIdParts.length - 1];
