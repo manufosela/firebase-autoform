@@ -306,12 +306,12 @@ export class FirebaseAutoform extends LitElement {
   _insertLoggedUser(obj) {
     const c = this._createFormGroup();
     const loggedUser = (this.loggedUser !== '') ? this.loggedUser : 'logged-user';
-    const user = (this.elId) ? Object.keys(this.data[this.elId]).includes('edit_user') ? this.data[this.elId].edit_user : this.user : this.user;
+    const user = (this.elId) ? Object.keys(this.data[this.elId]).includes('__edit_user') ? this.data[this.elId].__edit_user : this.user : this.user;
     const cssClass = (this.loggedUser !== '') ? '' : 'class="hidden"';
     c.innerHTML = `
-        <paper-input type="text" label="${loggedUser}" id="edit-user" readonly value="${user}" ${cssClass}></paper-input>
+        <paper-input type="text" label="${loggedUser}" id="__edit_user" readonly value="${user}" ${cssClass}></paper-input>
       `;
-    if (!this.shadowRoot.querySelector('#edit-user')) {
+    if (!this.shadowRoot.querySelector('#__edit_user')) {
       this.shadowRoot.querySelector('#formfieldlayer').appendChild(c);
     }
   }
@@ -323,7 +323,7 @@ export class FirebaseAutoform extends LitElement {
     for (let keyObj in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, keyObj)) {
         this._arrKeys.push(keyObj);
-        if (keyObj !== 'edit_user') {
+        if (keyObj !== '__edit_user' && keyObj !== '__created_at') {
           const fieldForm = this._getFieldForm(obj[keyObj], keyObj);
           if (fieldForm) {
             this.shadowRoot.querySelector('#formfieldlayer').appendChild(fieldForm);
@@ -363,7 +363,7 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _getHTMLTag(labelId, typeobj) {
-    const hasVal = (this.elId && this.data[this.elId]);
+    const hasVal = (this.elId && this.data[this.elId][labelId]);
     const elVal = (hasVal) ? this.data[this.elId][labelId].replace(/"/g, '&#34;') : '';
     const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
     const labelIdParts = labelId.split('_');
@@ -700,7 +700,8 @@ export class FirebaseAutoform extends LitElement {
     if (Object.keys(data).length !== 0) {
       let nextId = this.elId || parseInt(Object.keys(this.data).pop()) + 1;
       let callbackFn = (this.elId) ? null : this._cleanFields.bind(this);
-      data.edit_user = this.user;
+      data.__edit_user = this.user;
+      data.__created_at = firebase.database.ServerValue.TIMESTAMP;
       this.data[nextId] = data;
 
       firebase.database().ref(this.path).child(nextId).set(data, (error) => {
