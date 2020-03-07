@@ -276,7 +276,7 @@ export class FirebaseAutoform extends LitElement {
         } else {
           this._simple = true;
           this._cleanError();
-          let k = [this.path.replace('/', '')];
+          let k = [ this.path.replace('/', '') ];
           this.shadowRoot.querySelector('#spinner').active = false;
           let fieldForm = this._createField(k, typeof this.data[0]);
           this.shadowRoot.querySelector('#formfieldlayer').appendChild(fieldForm);
@@ -366,11 +366,11 @@ export class FirebaseAutoform extends LitElement {
     const hasVal = (this.elId && this.data[this.elId][labelId]);
     const elVal = (hasVal) ? this.data[this.elId][labelId].replace(/"/g, '&#34;') : '';
     const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
-    const labelIdParts = labelId.split('_');
-    const labelShown = labelIdParts[labelIdParts.length - 1];
+    const labelIdParts = labelId.split(',');
+    const labelShown = labelIdParts[labelIdParts.length - 1].replace(/_/g, ' ');
     const label = labelShown + (this.readonlyFields.includes(labelId) ? ' [READONLY]' : '');
     let HTMLTag;
-    if (this.textareaFields.includes(labelId)) {
+    if (this.textareaFields.includes(labelIdParts[labelIdParts.length - 1])) {
       HTMLTag = `
         <paper-textarea rows="3" type="${typeobj}" label="${label}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
           <div class="slot" slot="prefix">[${typeobj}]</div>
