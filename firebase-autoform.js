@@ -323,7 +323,7 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _insertLoggedUser(obj) {
-    const c = this._createFormGroup();
+    const c = this._createFormGroup('loggedUser');
     const loggedUser = (this.loggedUser !== '') ? this.loggedUser : 'logged-user';
     const user = this._getLoggedUser();
     const cssClass = (this.loggedUser !== '') ? '' : 'class="hidden"';
@@ -356,10 +356,10 @@ export class FirebaseAutoform extends LitElement {
     let fieldForm;
     if (typeof propField === 'object' && this._parentKeys.includes(labelKey)) {
       this.log('multifield multiple ' + labelKey);
-      fieldForm = this._createFormGroup();
+      fieldForm = this._createFormGroup(labelKey);
       this._createListMult(labelKey, fieldForm);
     } else if (this._parentKeys.includes(labelKey)) {
-      fieldForm = this._createFormGroup();
+      fieldForm = this._createFormGroup(labelKey);
       this._createList(labelKey, fieldForm);
       this.log('list ' + labelKey);
     } else if (typeof propField === 'object') {
@@ -375,14 +375,19 @@ export class FirebaseAutoform extends LitElement {
     return fieldForm;
   }
 
-  _createFormGroup(style) {
-    const formGroupLayer = document.createElement('div');
+  _createFormGroup(labelKey, style) {
+    const grpId = `GRP_${labelKey}`;
+    let formGroupLayer = this.shadowRoot.querySelector(`#${grpId}`);
+    if (!formGroupLayer) {
+      formGroupLayer = document.createElement('div');
+      formGroupLayer.id = grpId;
+    }
     formGroupLayer.className = (style === 'flex') ? 'formGroupFlex' : 'formGroup';
     return formGroupLayer;
   }
 
   _getLabels(labelId) {
-    const labelIdParts = labelId.split(',');
+    const labelIdParts = labelId.split('-');
     const labelShown = labelIdParts[labelIdParts.length - 1];
     const labelCleanId = labelShown.replace(/_/g, ' ');
     return [labelShown, labelCleanId];
@@ -417,7 +422,7 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _createField(labelId, typeobj) {
-    const c = this._createFormGroup();
+    const c = this._createFormGroup(labelId);
     if (!this.shadowRoot.querySelector('#' + labelId)) {
       c.innerHTML = this._getHTMLTag(labelId, typeobj);
     }
@@ -425,7 +430,7 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _createCheckbox(labelId) {
-    const c = this._createFormGroup();
+    const c = this._createFormGroup(labelId);
     const hasVal = (this.elId && this.data[this.elId]);
     const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
     const checked = (hasVal) ? ((elVal === true) ? 'checked="true"' : '') : '';
@@ -438,13 +443,13 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _createMF(labelId, typeobj) {
-    const c = this._createFormGroup();
+    const c = this._createFormGroup(labelId);
     this._createMultiField(c, labelId, typeobj);
     return c;
   }
 
   _createMultiField(container, labelId, typeobj) {
-    const c = this._createFormGroup();
+    const c = this._createFormGroup(labelId);
     this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
 
     const id = labelId + '_' + this._counter[labelId];
@@ -469,7 +474,7 @@ export class FirebaseAutoform extends LitElement {
     const container = ev.target.parentNode.parentNode;
     const typeobj = ev.target.getAttribute('typeobj');
     this._counter[labelId]++;
-    const c = this._createFormGroup();
+    const c = this._createFormGroup(labelId);
     if (!this.shadowRoot.querySelector('#' + labelId)) {
       const id = labelId + '_' + this._counter[labelId];
       const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
@@ -490,13 +495,9 @@ export class FirebaseAutoform extends LitElement {
         if (!this.shadowRoot.querySelector('#' + labelId)) {
           if (this.elId) {
             this.data[this.elId][labelId].forEach((elVal, index) => {
-              const container = (index === 0) ? this._createFormGroup('flex') : this._createFormGroup();
-              this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
-              const id = labelId + '_' + this._counter[labelId];
-              const paperDropdownMenu = document.createElement('paper-dropdown-menu');
-              paperDropdownMenu.id = id;
-              paperDropdownMenu.label = labelId;
-
+              const id = labelId + '_' + index;
+              const container = (index === 0) ? this._createFormGroup(id, 'flex') : this._createFormGroup(id);
+              const paperDropdownMenu = this._createPaperDropDownElement(id, labelId);
               const paperListbox = this._createPaperListBox(snap);
               paperDropdownMenu.appendChild(paperListbox);
               container.appendChild(paperDropdownMenu);
@@ -508,33 +509,36 @@ export class FirebaseAutoform extends LitElement {
                 this.log(elVal);
                 container.querySelector('paper-dropdown-menu').value = elVal;
               }
+              this._counter[labelId] = index;
             });
           } else {
-            const container = this._createFormGroup('flex');
-            this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
             const id = labelId + '_' + this._counter[labelId];
-            const paperDropdownMenu = document.createElement('paper-dropdown-menu');
-            paperDropdownMenu.id = id;
-            const [labelShown, labelCleanId] = this._getLabels(labelId);
-            paperDropdownMenu.label = labelCleanId;
+            const container = this._createFormGroup(id, 'flex');
+            const paperDropdownMenu = this._createPaperDropDownElement(id, labelId);
             const paperListbox = this._createPaperListBox(snap);
             paperDropdownMenu.appendChild(paperListbox);
             container.appendChild(paperDropdownMenu);
-            this._addPlusButton(id, container);
+            if (this._counter[labelId] === 0) {
+              this._addPlusButton(id, container);
+            }
             if (!this.shadowRoot.querySelector('#' + labelId)) {
               formGroup.appendChild(container);
             }
+            this._counter[labelId]++;
           }
         }
       });
   }
 
   _addPlusButton(id, container) {
-    const addButton = document.createElement('button');
-    addButton.id = 'btn_' + id;
-    addButton.innerHTML = '+';
-    addButton.addEventListener('click', this._newListMult.bind(this));
-    container.appendChild(addButton);
+    let addButton = this.shadowRoot.querySelector(`#${id}`);
+    if (!addButton) {
+      addButton = document.createElement('button');
+      addButton.id = 'btn_' + id;
+      addButton.innerHTML = '+';
+      addButton.addEventListener('click', this._newListMult.bind(this));
+      container.appendChild(addButton);
+    }
   }
 
   _createPaperListBox(snap) {
@@ -550,6 +554,24 @@ export class FirebaseAutoform extends LitElement {
     return paperListbox;
   }
 
+  _createPaperDropDownElement(id, labelId) {
+    let paperDropdownMenu = this.shadowRoot.querySelector(`#${id}`);
+    if (!paperDropdownMenu) {
+      paperDropdownMenu = document.createElement('paper-dropdown-menu');
+      paperDropdownMenu.id = id;
+      const [labelShown, labelCleanId] = this._getLabels(labelId);
+      paperDropdownMenu.label = labelCleanId;
+    }
+    return paperDropdownMenu;
+  }
+
+  _createPaperListBoxElement() {
+    const paperListbox = document.createElement('paper-listbox');
+    paperListbox.slot = 'dropdown-content';
+    paperListbox.className = 'dropdown-content';
+    return paperListbox;
+  }
+
   _newListMult(ev, o) {
     let labelId = ev.target.id.replace(/^btn_/, '');
     labelId = labelId.replace(/_\d*$/, '');
@@ -557,17 +579,12 @@ export class FirebaseAutoform extends LitElement {
     this._counter[labelId]++;
     const id = labelId + '_' + this._counter[labelId];
     const ref = firebase.database().ref('/' + labelId);
-    const paperDropdownMenu = document.createElement('paper-dropdown-menu');
-    paperDropdownMenu.id = id;
-    const [labelShown, labelCleanId] = this._getLabels(labelId);
-    paperDropdownMenu.label = labelCleanId;
-    const paperListbox = document.createElement('paper-listbox');
-    paperListbox.slot = 'dropdown-content';
-    paperListbox.className = 'dropdown-content';
-    const container = this._createFormGroup();
+    const paperDropdownMenu = this._createPaperDropDownElement(id, labelId);
+    const paperListbox = this._createPaperListBoxElement();
+    const container = this._createFormGroup(labelId);
     ref.once('value')
-      .then(function (snap) {
-        snap.forEach(function (item) {
+      .then((snap) => {
+        snap.forEach((item) => {
           const itemVal = item.val();
           const paperItem = document.createElement('paper-item');
           paperItem.innerHTML = itemVal;
@@ -575,12 +592,12 @@ export class FirebaseAutoform extends LitElement {
         });
         if (!this.shadowRoot.querySelector('#' + labelId)) {
           paperDropdownMenu.appendChild(paperListbox);
-          let c = this._createFormGroup();
+          let c = this._createFormGroup(labelId);
           this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
           container.appendChild(paperDropdownMenu);
           formGroup.appendChild(container);
         }
-      }.bind(this));
+      });
   }
 
   _createList(labelId, formgroup) {
@@ -595,8 +612,8 @@ export class FirebaseAutoform extends LitElement {
     paperListbox.slot = 'dropdown-content';
     paperListbox.className = 'dropdown-content';
     ref.once('value')
-      .then(function (snap) {
-        snap.forEach(function (item) {
+      .then((snap) => {
+        snap.forEach((item) => {
           let itemVal = item.val();
           const paperItem = document.createElement('paper-item');
           paperItem.innerHTML = itemVal;
@@ -607,7 +624,7 @@ export class FirebaseAutoform extends LitElement {
           formgroup.appendChild(paperDropdownMenu);
           paperDropdownMenu.value = elVal;
         }
-      }.bind(this));
+      });
   }
 
   _createListMS(labelId, formGroup) {
@@ -702,11 +719,12 @@ export class FirebaseAutoform extends LitElement {
         const val = this._getVal(el);
         data[this._arrKeys[i]] = (val) ? val : '';
       } else {
-        const els = this.shadowRoot.querySelectorAll('[id^=' + this._arrKeys[i] + '_]');
+        const key = this._arrKeys[i].split('-')[0];
+        const els = this.shadowRoot.querySelectorAll('[id^=' + key + ']');
         data[this._arrKeys[i]] = [];
         for (let j = 0; j < els.length; j++) {
           el = els[j];
-          const val = (el.$.input) ? el.$.input.value : el.value;
+          const val = el.$ ? (el.$.input) ? el.$.input.value : el.value : el.value;
           data[this._arrKeys[i]][j] = (val) ? val : '';
           this.log('\t' + j + ' = ' + val);
         }
