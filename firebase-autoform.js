@@ -401,7 +401,7 @@ export class FirebaseAutoform extends LitElement {
 
     const label = labelShown + (this.readonlyFields.includes(labelShown) ? ' [READONLY]' : '');
     let HTMLTag;
-    if (this.textareaFields.includes(labelCleanId)) {
+    if (this.textareaFields.includes(labelShown)) {
       HTMLTag = `
         <paper-textarea rows="3" type="${typeobj}" label="${labelCleanId}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
           <div class="slot" slot="prefix">[${typeobj}]</div>
