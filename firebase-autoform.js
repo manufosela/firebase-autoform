@@ -181,6 +181,11 @@ export class FirebaseAutoform extends LitElement {
     this._arrKeys = [];
     this.bLog = false;
     this.loggedUser = '';
+
+    this._setElId = this._setElId.bind(this);
+    this._userLogged = this._userLogged.bind(this);
+    this._userLogout = this._userLogout.bind(this);
+    this._setUploadedFileName = this._setUploadedFileName.bind(this);
   }
 
   log(msg) {
@@ -189,18 +194,21 @@ export class FirebaseAutoform extends LitElement {
     }
   }
 
+  _setElId(ev) {
+    this.elId = ev.detail.id;
+  }
+
+  _setUploadedFileName(ev) {
+    const name = ev.detail.name;
+    this.shadowRoot.querySelector('[name="' + name + '"').value = ev.detail.downloadURL;
+  }
+
   connectedCallback() {
     super.connectedCallback();
-    document.addEventListener('firebase-signin', (ev) => {
-      this._userLogged(ev);
-    });
-    document.addEventListener('firebase-signout', (ev) => {
-      this._userLogout(ev);
-    });
+    document.addEventListener('firebase-signin', this._userLogged);
+    document.addEventListener('firebase-signout', this._userLogout);
     if (this.elId) {
-      document.addEventListener('firebase-autolist-selectid', (ev) => {
-        this.elId = ev.detail.id;
-      });
+      document.addEventListener('firebase-autolist-selectid', this._setElId);
     }
     const firebaseAreYouLoggedEvent = new Event('firebase-are-you-logged'); // (2)
     document.dispatchEvent(firebaseAreYouLoggedEvent);
@@ -209,21 +217,16 @@ export class FirebaseAutoform extends LitElement {
     this.readonlyFields = (this.querySelector('readonly-fields')) ? this.querySelector('readonly-fields').innerText.replace(/[\n\s]*/g, '').split(',') : [];
     this.fileuploadFields = (this.querySelector('fileupload-fields')) ? this.querySelector('fileupload-fields').innerText.replace(/[\n\s]*/g, '').split(',') : [];
     if (this.fileuploadFields.length > 0) {
-      document.addEventListener('firebase-file-storage-uploaded', (ev) => {
-        const name = ev.detail.name;
-        this.shadowRoot.querySelector('[name="' + name + '"').value = ev.detail.downloadURL;
-      });
+      document.addEventListener('firebase-file-storage-uploaded', this._setUploadedFileName);
     }
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    document.removeEventListener('firebase-signin', (ev) => {
-      this._userLogged(ev);
-    });
-    document.removeEventListener('firebase-signout', (ev) => {
-      this._userLogout(ev);
-    });
+    document.removeEventListener('firebase-signin', this._userLogged);
+    document.removeEventListener('firebase-signout', this._userLogout);
+    document.removeEventListener('firebase-autolist-selectid', this._setElId);
+    document.removeEventListener('firebase-file-storage-uploaded', this._setUploadedFileName);
   }
 
   updated(changedProperties) {
