@@ -68,6 +68,10 @@ export class FirebaseAutoform extends LitElement {
       },
       bLog: {
         type: Boolean
+      },
+      bShowPath: {
+        type: Boolean,
+        attribute: 'show-path'
       }
     };
   }
@@ -199,6 +203,7 @@ export class FirebaseAutoform extends LitElement {
     this._counter = [];
     this._arrKeys = [];
     this.bLog = false;
+    this.bShowPath = false;
     this.loggedUser = '';
 
     this._setElId = this._setElId.bind(this);
@@ -827,12 +832,13 @@ export class FirebaseAutoform extends LitElement {
   }
 
   render() {
+    const path = this.path.split('/');
     return html `
       ${this.dataUser !== null ? html` 
         <h3 class='path'>
-          ${this.path.replace(/^\//, '')} 
+          ${(this.bShowPath) ? html`${path[path.length - 1]} ID: ` : html``} 
           <span class="id">
-            ${this.elId ? html`(ID ${this.elId})` : html``}
+            ${this.elId ? html`${this.elId}` : html``}
           </span>
           <paper-spinner id="spinner" class="blue" active></paper-spinner>
         </h3>
