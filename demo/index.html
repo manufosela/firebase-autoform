@@ -102,9 +102,10 @@
       }
     </style>
     <firebase-autoform id="fbaf1" path="/peliculas" el-id="6"  logged-user="Insertado por">
-      <textarea-fields>titulo</textarea-fields>
-      <readonly-fields>titulo</readonly-fields>
-      <fileupload-fields>caratula</uploadfile-fields>
+      <textarea-fields>C02-título</textarea-fields>
+      <readonly-fields>C02-título</readonly-fields>
+      <fileupload-fields>A02-carátula</uploadfile-fields>
+      <grp-names>A=Cartel,B=Categorización,C=Datos,D=Valoración</grp-names>
     </firebase-autoform>
     <script>
       document.addEventListener('firebase-autoform-ready', (ev) => {
@@ -115,7 +116,10 @@
     </script>
 
     <h3>Add new entry</h3>
-    <firebase-autoform path="/peliculas"></firebase-autoform>
+    <firebase-autoform path="/peliculas">
+      <textarea-fields>C02-título</textarea-fields>
+      <fileupload-fields>A02-carátula</uploadfile-fields>
+    </firebase-autoform>
   </div>
 </body>
 

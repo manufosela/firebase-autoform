@@ -83,6 +83,8 @@ export class FirebaseAutoform extends LitElement {
         --bg-save-btn: yellow;
         --color-save-btn: blue;
         --fields-max-width: 300px;
+        --fieldset-border-color: #F50;
+        --legend-bg-color: #DDD
       */
       :host {
         display: block;
@@ -96,9 +98,9 @@ export class FirebaseAutoform extends LitElement {
       .waiting { padding: 20px; margin: 20px; font-size: 2rem; }
       .path { margin:0; padding: 20px; font-size: 2rem; color: var(--path-title--color) }
       .formGroupFlex { display:flex; }
-      .chbx-block { margin: 15px 0; }
+      .chbx-block { display:flex; margin: 15px 0; }
       .chbx-block .label { font-size: 0.8rem; }
-      .chbx-block paper-checkbox { margin-left: 4rem; }
+      .chbx-block paper-checkbox { margin-left: 1rem; }
       
       .container {
         display:flex;
@@ -150,8 +152,25 @@ export class FirebaseAutoform extends LitElement {
         background: red;
       }
       label {
-        font-size: 0.7em;
+        display:block;
+        font-size: 0.8em;
         font-family: 'Roboto', 'Noto', sans-serif;
+      }
+      fieldset {
+        border: 1px solid var(--fieldset-border-color, #F50);
+        border-radius: 20px;
+        padding: 20px;
+        margin: 10px;
+        width: var(--fields-max-width, 300px);
+      }
+      fieldset fieldset {
+        border:0;
+      }
+      legend {
+        padding: 0 20px;
+        background: var(--legend-bg-color, #DDD);
+        border-radius: 10px;
+        color: var(--fieldset-border-color, #F50);
       }
 
       button {
@@ -219,6 +238,13 @@ export class FirebaseAutoform extends LitElement {
     if (this.fileuploadFields.length > 0) {
       document.addEventListener('firebase-file-storage-uploaded', this._setUploadedFileName);
     }
+    const grpNames = (this.querySelector('grp-names')) ? this.querySelector('grp-names').innerText.replace(/[\n\s]*/g, '').split(',') : [];
+    this.grpNames = {};
+    for (let el of grpNames) {
+      const parts = el.split('=');
+      this.grpNames['GRP_' + parts[0]] = parts[1];
+    }
+    console.log(grpNames);
   }
 
   disconnectedCallback() {
@@ -250,6 +276,18 @@ export class FirebaseAutoform extends LitElement {
     this.data = null;
   }
 
+  _insertLegends() {
+    const formGroups = this.shadowRoot.querySelectorAll('#formfieldlayer > fieldset');
+    for (let frmG of formGroups) {
+      const grpId = frmG.id;
+      if (this.grpNames[grpId]) {
+        const legend = document.createElement('legend');
+        legend.innerText = this.grpNames[grpId];
+        frmG.appendChild(legend);
+      }
+    }
+  }
+
   getData() {
     let starredStatusRef = firebase.database().ref(this.path);
     starredStatusRef.on('value', (snapshot) => {
@@ -259,6 +297,7 @@ export class FirebaseAutoform extends LitElement {
           this._insertFields(this.data[0]);
           this.shadowRoot.querySelector('#spinner').active = false;
           if (this.elId) {
+            this._insertLegends();
             document.dispatchEvent(new CustomEvent('firebase-autoform-ready', {
               detail: {
                 path: this.path,
@@ -335,7 +374,7 @@ export class FirebaseAutoform extends LitElement {
     const loggedUser = (this.loggedUser !== '') ? this.loggedUser : 'logged-user';
     const user = this._getLoggedUser();
     const cssClass = (this.loggedUser !== '') ? '' : 'class="hidden"';
-    c.innerHTML = `
+    c.innerHTML += `
         <paper-input type="text" label="${loggedUser}" id="__edit_user" readonly value="${user}" ${cssClass}></paper-input>
       `;
     if (!this.shadowRoot.querySelector('#__edit_user')) {
@@ -383,14 +422,30 @@ export class FirebaseAutoform extends LitElement {
     return fieldForm;
   }
 
+  _getGrpId(labelKey) {
+    let grpId;
+    const partsId = labelKey.split('-');
+    if (partsId.length > 1) {
+      if (!!~labelKey.search(/_[0-9]*$/)) {
+        grpId = `GRP_${labelKey}`;
+      } else {
+        const grpName = partsId[0].replace(/[0-9]*/g, '');
+        grpId = `GRP_${grpName}`;
+      }
+    } else {
+      grpId = `GRP_${labelKey}`;
+    }
+    return grpId;
+  }
+
   _createFormGroup(labelKey, style) {
-    const grpId = `GRP_${labelKey}`;
+    const grpId = this._getGrpId(labelKey);
     let formGroupLayer = this.shadowRoot.querySelector(`#${grpId}`);
     if (!formGroupLayer) {
-      formGroupLayer = document.createElement('div');
+      formGroupLayer = (labelKey !== 'loggedUser') ? document.createElement('fieldset') : formGroupLayer = document.createElement('div');
       formGroupLayer.id = grpId;
+      formGroupLayer.className = (style === 'flex') ? 'formGroupFlex' : 'formGroup';
     }
-    formGroupLayer.className = (style === 'flex') ? 'formGroupFlex' : 'formGroup';
     return formGroupLayer;
   }
 
@@ -409,13 +464,13 @@ export class FirebaseAutoform extends LitElement {
 
     const label = labelShown + (this.readonlyFields.includes(labelShown) ? ' [READONLY]' : '');
     let HTMLTag;
-    if (this.textareaFields.includes(labelShown)) {
+    if (this.textareaFields.includes(labelId)) {
       HTMLTag = `
         <paper-textarea rows="3" type="${typeobj}" label="${labelCleanId}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
           <div class="slot" slot="prefix">[${typeobj}]</div>
         </paper-textarea>
       `;
-    } else if (this.fileuploadFields.includes(labelShown)) {
+    } else if (this.fileuploadFields.includes(labelId)) {
       HTMLTag = `
         <firebase-uploadfile id="${labelId}" name="${labelCleanId}" path="/uploadedFiles" storage-name="NAME,FILENAME" ${(hasVal) ? `value="${elVal}"` : ''}></firebase-uploadfile>
       `;
@@ -432,20 +487,21 @@ export class FirebaseAutoform extends LitElement {
   _createField(labelId, typeobj) {
     const c = this._createFormGroup(labelId);
     if (!this.shadowRoot.querySelector('#' + labelId)) {
-      c.innerHTML = this._getHTMLTag(labelId, typeobj);
+      c.innerHTML += this._getHTMLTag(labelId, typeobj);
     }
     return c;
   }
 
   _createCheckbox(labelId) {
     const c = this._createFormGroup(labelId);
+    const [labelShown, labelCleanId] = this._getLabels(labelId);
     const hasVal = (this.elId && this.data[this.elId]);
     const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
     const checked = (hasVal) ? ((elVal === true) ? 'checked="true"' : '') : '';
     const label = labelId.replace(/_/g, ' ');
     const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
-    c.innerHTML = `
-      <div class="chbx-block"><div class="label">${label}</div><paper-checkbox label="${labelId}" id="${labelId}" ${checked} ${readOnly}"></paper-checkbox></div>
+    c.innerHTML += `
+      <div class="chbx-block"><div class="label">${labelCleanId}</div><paper-checkbox label="${labelId}" id="${labelId}" ${checked} ${readOnly}"></paper-checkbox></div>
     `;
     return c;
   }
@@ -462,7 +518,7 @@ export class FirebaseAutoform extends LitElement {
 
     const id = labelId + '_' + this._counter[labelId];
     const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
-    c.innerHTML = `
+    c.innerHTML += `
       <paper-input type="${typeobj}" label="${labelId}" id="${id}" class="inlineblock" ${readOnly}>
         <div class="slot" slot="prefix">[${typeobj}]</div>
         <div class="slot" slot="suffix">${this._counter[labelId]}</div>
@@ -486,7 +542,7 @@ export class FirebaseAutoform extends LitElement {
     if (!this.shadowRoot.querySelector('#' + labelId)) {
       const id = labelId + '_' + this._counter[labelId];
       const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
-      c.innerHTML = `
+      c.innerHTML += `
         <paper-input type="${typeobj}" label="${labelId}" id="${id}" class="inlineblock" ${readOnly}>
           <div class="slot" slot="prefix">[${typeobj}]</div>
           <div class="slot" slot="suffix">${this._counter[labelId]}</div>
