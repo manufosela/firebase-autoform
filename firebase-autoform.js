@@ -249,7 +249,6 @@ export class FirebaseAutoform extends LitElement {
       const parts = el.split('=');
       this.grpNames['GRP_' + parts[0]] = parts[1];
     }
-    console.log(grpNames);
   }
 
   disconnectedCallback() {
