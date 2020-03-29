@@ -680,6 +680,9 @@ export class FirebaseAutoform extends LitElement {
     highSelectLabel.innerText = labelCleanId;
     const hasVal = (this.elId && this.data[this.elId]);
     const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
+    const highOption = document.createElement('high-option');
+    highOption.innerHTML = '';
+    highSelect.appendChild(highOption);
     ref.once('value')
       .then((snap) => {
         snap.forEach((item) => {
