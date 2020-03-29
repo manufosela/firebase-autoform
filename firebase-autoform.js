@@ -198,7 +198,7 @@ export class FirebaseAutoform extends LitElement {
         opacity:0;
         box-shadow:2px 2px 5px #aaa; -webkit-box-shadow:2px 2px 5px #aaa; -moz-box-shadow:2px 2px 5px #aaa;
       }
-      .tooltip:before {
+      .tooltip.west:before {
         content:' '; 
         position:absolute;
         top:50%;
@@ -208,6 +208,17 @@ export class FirebaseAutoform extends LitElement {
         margin-top:-8px; 
         border:8px solid transparent;
         border-right-color:#333;
+      }
+      .tooltip.south:before {
+        content: " ";
+        position: absolute;
+        top: 100%;
+        left: 49%;
+        width: 0;
+        height: 0;
+        margin-top: 0;
+        border: 8px solid transparent;
+        border-top-color: #333;
       }
       .tooltip.show {
         opacity: 1;       
@@ -238,6 +249,7 @@ export class FirebaseAutoform extends LitElement {
 
     this.tooltip = document.createElement('div');
     this.tooltip.classList.add('tooltip');
+    this.tooltip.classList.add('south');
   }
 
   log(msg) {
@@ -344,12 +356,12 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _tooltip(target, options) {
-    this.tooltip.style.top = target.offsetTop + 'px';
-    this.tooltip.style.left = 'calc(var(--fields-max-width) + 100px)';
     if (options.content) {
       this.tooltip.innerText = options.content;
     }
     target.parentNode.appendChild(this.tooltip);
+    this.tooltip.style.top = (target.offsetTop - this.tooltip.offsetHeight - 10) + 'px';
+    this.tooltip.style.left = target.offsetLeft + 'px'; // 'calc(var(--fields-max-width) + 100px)';
   }
 
   _showTooltip(ev) {
@@ -361,14 +373,13 @@ export class FirebaseAutoform extends LitElement {
 
   _hideTooltip(ev) {
     this.tooltip.classList.remove('show');
+    this.tooltip.style.left = '-1000px';
   }
 
   _insertTooltips() {
-    const paperInputs = this.shadowRoot.querySelectorAll('paper-input');
     for (let field in this.fieldsDesc) {
       if (this.fieldsDesc.hasOwnProperty(field)) {
         const el = this.shadowRoot.querySelector(`#${field}`);
-        el.addEventListener('click', this._showTooltip);
         el.addEventListener('mouseover', this._showTooltip);
         el.addEventListener('mouseout', this._hideTooltip);
       }
