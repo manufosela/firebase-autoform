@@ -15,7 +15,6 @@ import {} from '@polymer/paper-dropdown-menu/paper-dropdown-menu.js';
 import {} from '@polymer/paper-listbox/paper-listbox.js';
 import {} from 'firebase-uploadfile/firebase-uploadfile.js';
 import {} from 'high-select/lib/high-select.js';
-import tippy from 'tippy.js';
 
 /**
  * `firebase-autoform`
