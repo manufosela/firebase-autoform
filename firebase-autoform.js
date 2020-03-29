@@ -284,7 +284,7 @@ export class FirebaseAutoform extends LitElement {
     const formGroups = this.shadowRoot.querySelectorAll('#formfieldlayer > fieldset');
     for (let frmG of formGroups) {
       const grpId = frmG.id;
-      if (this.grpNames[grpId]) {
+      if (this.grpNames[grpId] && !frmG.querySelector('legend')) {
         const legend = document.createElement('legend');
         legend.innerText = this.grpNames[grpId];
         frmG.appendChild(legend);
