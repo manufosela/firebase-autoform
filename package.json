@@ -1,7 +1,7 @@
 {
   "name": "firebase-autoform",
   "description": "Lit-Element webcomponent firebase-autoform",
-  "version": "1.9.6",
+  "version": "1.10.0",
   "main": "firebase-autoform.js",
   "repository": {
     "type": "git",
@@ -36,12 +36,14 @@
     "@babel/plugin-proposal-class-properties": "^7.7.4",
     "@babel/plugin-proposal-decorators": "^7.7.4",
     "@webcomponents/webcomponentsjs": "^2.4.0",
+    "es-dev-server": "^1.46.0",
     "firebase-loginbutton": "^2.3.5",
     "rollup": "^1.28.0",
     "rollup-plugin-babel": "^4.3.0",
     "rollup-plugin-node-resolve": "^4.0.0"
   },
   "scripts": {
-    "build": "rm -rf build && mkdir build && rollup -c"
+    "build": "rm -rf build && mkdir build && rollup -c",
+    "start": "es-dev-server --app-index /demo/index.html --node-resolve --watch --open"
   }
 }

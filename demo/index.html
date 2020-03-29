@@ -104,10 +104,20 @@
     <firebase-autoform id="fbaf1" path="/peliculas" el-id="6"  logged-user="Insertado por" show-path="true">
       <textarea-fields>C02-título</textarea-fields>
       <readonly-fields>C02-título</readonly-fields>
-      <fileupload-fields>A02-carátula</uploadfile-fields>
+      <fileupload-fields>A02-carátula</fileupload-fields>
       <grp-names>A=Cartel,B=Categorización,C=Datos,D=Valoración</grp-names>
+      <description-field>A02-carátula=Sube la caratula de la pélicula en formato imagen</description-field>
+      <description-field>D01-me_gustó|D02-valoración=Probando la misma descripción en dos campos diferentes</description-field>
+      <fields-mandatory>
+        A01cartel,A02-caratula|B01-categoría,B02-colección
+      </fields-mandatory>
+      <fields-validator>
+        C02-título=length(5-50)
+      </fields-validator>
+      <grp-collapsiple>B,D</grp-collapsible>
     </firebase-autoform>
     <script>
+      process = {}; process.env="DEV";
       document.addEventListener('firebase-autoform-ready', (ev) => {
         console.log(ev.detail.path);
         console.log(ev.detail.id);
@@ -115,11 +125,11 @@
       });
     </script>
 
-    <h3>Add new entry</h3>
+    <!--<h3>Add new entry</h3>
     <firebase-autoform path="/peliculas">
       <textarea-fields>C02-título</textarea-fields>
       <fileupload-fields>A02-carátula</uploadfile-fields>
-    </firebase-autoform>
+    </firebase-autoform>-->
   </div>
 </body>
 

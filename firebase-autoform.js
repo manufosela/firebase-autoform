@@ -15,6 +15,7 @@ import {} from '@polymer/paper-dropdown-menu/paper-dropdown-menu.js';
 import {} from '@polymer/paper-listbox/paper-listbox.js';
 import {} from 'firebase-uploadfile/firebase-uploadfile.js';
 import {} from 'high-select/lib/high-select.js';
+import tippy from 'tippy.js';
 
 /**
  * `firebase-autoform`
@@ -176,7 +177,6 @@ export class FirebaseAutoform extends LitElement {
         border-radius: 10px;
         color: var(--fieldset-border-color, #F50);
       }
-
       button {
         width: 20px;
         height: 20px;
@@ -188,6 +188,30 @@ export class FirebaseAutoform extends LitElement {
       .hidden {
         visibility:hidden;
         display:none;
+      }      
+      .tooltip {
+        position:absolute;
+        width:auto;
+        max-width:400px;
+        padding:10px;
+        color:#fff;
+        background:#333;
+        opacity:0;
+        box-shadow:2px 2px 5px #aaa; -webkit-box-shadow:2px 2px 5px #aaa; -moz-box-shadow:2px 2px 5px #aaa;
+      }
+      .tooltip:before {
+        content:' '; 
+        position:absolute;
+        top:50%;
+        left:-16px; 
+        width:0;
+        height:0;
+        margin-top:-8px; 
+        border:8px solid transparent;
+        border-right-color:#333;
+      }
+      .tooltip.show {
+        opacity: 1;       
       }
     `;
   }
@@ -210,6 +234,11 @@ export class FirebaseAutoform extends LitElement {
     this._userLogged = this._userLogged.bind(this);
     this._userLogout = this._userLogout.bind(this);
     this._setUploadedFileName = this._setUploadedFileName.bind(this);
+    this._showTooltip = this._showTooltip.bind(this);
+    this._hideTooltip = this._hideTooltip.bind(this);
+
+    this.tooltip = document.createElement('div');
+    this.tooltip.classList.add('tooltip');
   }
 
   log(msg) {
@@ -225,6 +254,19 @@ export class FirebaseAutoform extends LitElement {
   _setUploadedFileName(ev) {
     const name = ev.detail.name;
     this.shadowRoot.querySelector('[name="' + name + '"').value = ev.detail.downloadURL;
+  }
+
+  _getFieldDesc() {
+    const fieldsDesc = {};
+    const fieldsDescDOM = (this.querySelectorAll('description-field')) ? this.querySelectorAll('description-field') : [];
+    for (let fieldDesc of fieldsDescDOM) {
+      const fieldDescParts = fieldDesc.innerText.split('=');
+      const repeatedFields = fieldDescParts[0].split('|');
+      for (let field of repeatedFields) {
+        fieldsDesc[field] = fieldDescParts[1];
+      }
+    }
+    return fieldsDesc;
   }
 
   connectedCallback() {
@@ -249,6 +291,8 @@ export class FirebaseAutoform extends LitElement {
       const parts = el.split('=');
       this.grpNames['GRP_' + parts[0]] = parts[1];
     }
+
+    this.fieldsDesc = this._getFieldDesc();
   }
 
   disconnectedCallback() {
@@ -257,6 +301,14 @@ export class FirebaseAutoform extends LitElement {
     document.removeEventListener('firebase-signout', this._userLogout);
     document.removeEventListener('firebase-autolist-selectid', this._setElId);
     document.removeEventListener('firebase-file-storage-uploaded', this._setUploadedFileName);
+    for (let field in this.fieldsDesc) {
+      if (this.fieldsDesc.hasOwnProperty(field)) {
+        const el = this.shadowRoot.querySelector(`#${field}`);
+        el.removeEventListener('click', this._showTooltip);
+        el.removeEventListener('mouseover', this._showTooltip);
+        el.removeEventListener('mouseout', this._hideTooltip);
+      }
+    }
   }
 
   updated(changedProperties) {
@@ -292,6 +344,38 @@ export class FirebaseAutoform extends LitElement {
     }
   }
 
+  _tooltip(target, options) {
+    this.tooltip.style.top = target.offsetTop + 'px';
+    this.tooltip.style.left = 'calc(var(--fields-max-width) + 100px)';
+    if (options.content) {
+      this.tooltip.innerText = options.content;
+    }
+    target.parentNode.appendChild(this.tooltip);
+  }
+
+  _showTooltip(ev) {
+    this.tooltip.classList.add('show');
+    this._tooltip(ev.target, {
+      content: this.fieldsDesc[ev.target.id]
+    });
+  }
+
+  _hideTooltip(ev) {
+    this.tooltip.classList.remove('show');
+  }
+
+  _insertTooltips() {
+    const paperInputs = this.shadowRoot.querySelectorAll('paper-input');
+    for (let field in this.fieldsDesc) {
+      if (this.fieldsDesc.hasOwnProperty(field)) {
+        const el = this.shadowRoot.querySelector(`#${field}`);
+        el.addEventListener('click', this._showTooltip);
+        el.addEventListener('mouseover', this._showTooltip);
+        el.addEventListener('mouseout', this._hideTooltip);
+      }
+    }
+  }
+
   getData() {
     let starredStatusRef = firebase.database().ref(this.path);
     starredStatusRef.on('value', (snapshot) => {
@@ -302,6 +386,7 @@ export class FirebaseAutoform extends LitElement {
           this.shadowRoot.querySelector('#spinner').active = false;
           if (this.elId) {
             this._insertLegends();
+            this._insertTooltips();
             document.dispatchEvent(new CustomEvent('firebase-autoform-ready', {
               detail: {
                 path: this.path,
@@ -343,7 +428,7 @@ export class FirebaseAutoform extends LitElement {
     let counts = [];
     ref.once('value')
       .then(snap => {
-        snap.forEach(function (item) {
+        snap.forEach(function(item) {
           let itemVal = item.val();
           let itemKey = item.key;
           keys.push(itemKey);
@@ -480,7 +565,7 @@ export class FirebaseAutoform extends LitElement {
       `;
     } else {
       HTMLTag = `
-        <paper-input type="${typeobj}" label="${labelCleanId}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
+        <paper-input type="${typeobj}" label="${labelCleanId}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly} title="PROBANDO ESTA MIERDA">
           <div class="slot" slot="prefix">[${typeobj}]</div>
         </paper-input>
       `;
