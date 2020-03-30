@@ -635,7 +635,7 @@ export class FirebaseAutoform extends LitElement {
       `;
     } else {
       HTMLTag = `
-        <paper-input type="${typeobj}" label="${labelCleanId}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly} title="PROBANDO ESTA MIERDA">
+        <paper-input type="${typeobj}" label="${labelCleanId}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
           <div class="slot" slot="prefix">[${typeobj}]</div>
         </paper-input>
       `;
