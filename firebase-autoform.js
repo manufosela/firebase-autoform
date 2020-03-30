@@ -533,7 +533,7 @@ export class FirebaseAutoform extends LitElement {
     const loggedUser = (this.loggedUser !== '') ? this.loggedUser : 'logged-user';
     const user = this._getLoggedUser();
     const cssClass = (this.loggedUser !== '') ? '' : 'class="hidden"';
-    c.innerHTML += `
+    c.innerHTML = `
         <paper-input type="text" label="${loggedUser}" id="__edit_user" readonly value="${user}" ${cssClass}></paper-input>
       `;
     if (!this.shadowRoot.querySelector('#__edit_user')) {
