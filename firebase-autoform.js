@@ -198,7 +198,7 @@ export class FirebaseAutoform extends LitElement {
         opacity:0;
         box-shadow:2px 2px 5px #aaa; -webkit-box-shadow:2px 2px 5px #aaa; -moz-box-shadow:2px 2px 5px #aaa;
       }
-      .tooltip.west:before {
+      .west:before {
         content:' '; 
         position:absolute;
         top:50%;
@@ -209,7 +209,7 @@ export class FirebaseAutoform extends LitElement {
         border:8px solid transparent;
         border-right-color:#333;
       }
-      .tooltip.south:before {
+      .south:before {
         content: " ";
         position: absolute;
         top: 100%;
@@ -222,6 +222,28 @@ export class FirebaseAutoform extends LitElement {
       }
       .tooltip.show {
         opacity: 1;       
+      }
+      .collapsed {
+        overflow: hidden;
+        height: 10px;
+      }
+      .toggle {
+        cursor: pointer;
+        content: " ";
+        position: relative;
+        left: 10px;
+        width: 0;
+        height: 0;
+        margin-top: 0;
+        border: 8px solid transparent;
+      }
+      .down {
+        border-top-color: #333;
+        top: 15px;
+      }
+      .up {
+        border-bottom-color: #333;
+        top: -13px;
       }
     `;
   }
@@ -280,6 +302,11 @@ export class FirebaseAutoform extends LitElement {
     return fieldsDesc;
   }
 
+  _getCollapsibleGroups() {
+    const fieldsCollapGrpDOM = (this.querySelector('grp-collapsiple')) ? this.querySelector('grp-collapsiple').innerText.replace(/[\n\s]*/g, '') : '';
+    return fieldsCollapGrpDOM.split(',');
+  }
+
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener('firebase-signin', this._userLogged);
@@ -304,6 +331,7 @@ export class FirebaseAutoform extends LitElement {
     }
 
     this.fieldsDesc = this._getFieldDesc();
+    this.collapsibleGroups = this._getCollapsibleGroups();
   }
 
   disconnectedCallback() {
@@ -386,6 +414,35 @@ export class FirebaseAutoform extends LitElement {
     }
   }
 
+  _toggleCollapse(ev) {
+    const el = ev.target;
+    if (el.classList.value.includes('up')) {
+      el.classList.remove('up');
+      el.classList.add('down');
+      el.parentNode.parentNode.classList.add('collapsed');
+    } else {
+      el.classList.remove('down');
+      el.classList.add('up');
+      el.parentNode.parentNode.classList.remove('collapsed');
+    }
+  }
+
+  _makeCollapsibleGrps() {
+    const fieldSets = this.shadowRoot.querySelectorAll('fieldset');
+    for (let fieldSet of fieldSets) {
+      const letter = fieldSet.id.split('_')[1];
+      if (this.collapsibleGroups.includes(letter)) {
+        fieldSet.classList.add('collapsed');
+        const legend = fieldSet.querySelector('legend');
+        const btn = document.createElement('a');
+        btn.classList.add('toggle');
+        btn.classList.add('down');
+        legend.appendChild(btn);
+        btn.addEventListener('click', this._toggleCollapse);
+      }
+    }
+  }
+
   getData() {
     let starredStatusRef = firebase.database().ref(this.path);
     starredStatusRef.on('value', (snapshot) => {
@@ -397,6 +454,7 @@ export class FirebaseAutoform extends LitElement {
           if (this.elId) {
             this._insertLegends();
             this._insertTooltips();
+            this._makeCollapsibleGrps();
             document.dispatchEvent(new CustomEvent('firebase-autoform-ready', {
               detail: {
                 path: this.path,
