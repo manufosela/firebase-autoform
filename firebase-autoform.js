@@ -434,11 +434,13 @@ export class FirebaseAutoform extends LitElement {
       if (this.collapsibleGroups.includes(letter)) {
         fieldSet.classList.add('collapsed');
         const legend = fieldSet.querySelector('legend');
-        const btn = document.createElement('a');
-        btn.classList.add('toggle');
-        btn.classList.add('down');
-        legend.appendChild(btn);
-        btn.addEventListener('click', this._toggleCollapse);
+        if (!legend.querySelector('a')) {
+          const btn = document.createElement('a');
+          btn.classList.add('toggle');
+          btn.classList.add('down');
+          legend.appendChild(btn);
+          btn.addEventListener('click', this._toggleCollapse);
+        }
       }
     }
   }
