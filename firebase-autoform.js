@@ -307,6 +307,10 @@ export class FirebaseAutoform extends LitElement {
     return fieldsCollapGrpDOM.split(',');
   }
 
+  _getMandatoryFields() {
+
+  }
+
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener('firebase-signin', this._userLogged);
@@ -332,6 +336,7 @@ export class FirebaseAutoform extends LitElement {
 
     this.fieldsDesc = this._getFieldDesc();
     this.collapsibleGroups = this._getCollapsibleGroups();
+    this.mandatoryFields = this._getMandatoryFields();
   }
 
   disconnectedCallback() {
@@ -835,20 +840,22 @@ export class FirebaseAutoform extends LitElement {
     highSelectLabel.innerText = labelCleanId;
     const hasVal = (this.elId && this.data[this.elId]);
     const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
-    const highOption = document.createElement('high-option');
+    let selectedEl = 0;
+    let highOption = document.createElement('high-option');
     highOption.innerHTML = '';
     highSelect.appendChild(highOption);
     ref.once('value')
       .then((snap) => {
         snap.forEach((item) => {
           let itemVal = item.val();
-          const highOption = document.createElement('high-option');
+          highOption = document.createElement('high-option');
           highOption.innerHTML = itemVal;
           if (itemVal === elVal) {
-            highOption.selected = 'selected';
+            selectedEl = parseInt(item.key) + 1;
           }
           highSelect.appendChild(highOption);
         });
+        highSelect.children[selectedEl].selected = true;
         if (!this.shadowRoot.querySelector('#' + labelId)) {
           formGroup.appendChild(highSelectLabel);
           formGroup.appendChild(highSelect);
