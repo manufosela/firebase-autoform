@@ -108,8 +108,9 @@
       <grp-names>A=Cartel,B=Categorización,C=Datos,D=Valoración</grp-names>
       <description-field>A02-carátula=Sube la caratula de la pélicula en formato imagen</description-field>
       <description-field>D01-me_gustó|D02-valoración=Probando la misma descripción en dos campos diferentes</description-field>
+      <description-field>A01-cartel=Descripción del tooltip del cartel</description-field>
       <fields-mandatory>
-        A01cartel,A02-caratula|B01-categoría,B02-colección
+        A01cartel&A02-caratula,B01-categoría&B02-colección
       </fields-mandatory>
       <fields-validator>
         C02-título=length(5-50)

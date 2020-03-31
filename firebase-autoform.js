@@ -409,12 +409,18 @@ export class FirebaseAutoform extends LitElement {
     this.tooltip.style.left = '-1000px';
   }
 
+  _addEventsTooltip(field) {
+    const el = this.shadowRoot.querySelector(`#${field}`);
+    if (el) {
+      el.addEventListener('mouseover', this._showTooltip);
+      el.addEventListener('mouseout', this._hideTooltip);
+    }
+  }
+
   _insertTooltips() {
     for (let field in this.fieldsDesc) {
       if (this.fieldsDesc.hasOwnProperty(field)) {
-        const el = this.shadowRoot.querySelector(`#${field}`);
-        el.addEventListener('mouseover', this._showTooltip);
-        el.addEventListener('mouseout', this._hideTooltip);
+        this._addEventsTooltip(field);
       }
     }
   }
@@ -860,6 +866,9 @@ export class FirebaseAutoform extends LitElement {
           formGroup.appendChild(highSelectLabel);
           formGroup.appendChild(highSelect);
           highSelect.value = elVal;
+        }
+        if (this.fieldsDesc[labelId]) {
+          this._addEventsTooltip(labelId);
         }
       });
   }
