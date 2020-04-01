@@ -98,7 +98,7 @@
     <h3>Edit entry ID 5</h3>
     <style>
       #fbaf1 {
-        --fields-max-width: 500px;
+        --fields-max-width: 600px;
       }
     </style>
     <firebase-autoform id="fbaf1" path="/peliculas" el-id="6"  logged-user="Insertado por" show-path="true">
@@ -106,16 +106,20 @@
       <readonly-fields>C02-título</readonly-fields>
       <fileupload-fields>A02-carátula</fileupload-fields>
       <grp-names>A=Cartel,B=Categorización,C=Datos,D=Valoración</grp-names>
+      <grp-collapsible>B,D</grp-collapsible>
+
       <description-field>A02-carátula=Sube la caratula de la pélicula en formato imagen</description-field>
       <description-field>D01-me_gustó|D02-valoración=Probando la misma descripción en dos campos diferentes</description-field>
       <description-field>A01-cartel=Descripción del tooltip del cartel</description-field>
-      <fields-mandatory>
-        A01cartel&A02-caratula,B01-categoría&B02-colección
-      </fields-mandatory>
-      <fields-validator>
+      
+      <mandatory-fields>
+        A01-cartel&A02-caratula,B01-categoría&B02-colección
+      </mandatory-fields>
+      
+      <validation-fields>
         C02-título=length(5-50)
-      </fields-validator>
-      <grp-collapsiple>B,D</grp-collapsible>
+      </validation-fields>
+      
     </firebase-autoform>
     <script>
       process = {}; process.env="DEV";

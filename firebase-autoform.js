@@ -303,12 +303,21 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _getCollapsibleGroups() {
-    const fieldsCollapGrpDOM = (this.querySelector('grp-collapsiple')) ? this.querySelector('grp-collapsiple').innerText.replace(/[\n\s]*/g, '') : '';
+    const fieldsCollapGrpDOM = (this.querySelector('grp-collapsible')) ? this.querySelector('grp-collapsible').innerText.replace(/[\n\s]*/g, '') : '';
     return fieldsCollapGrpDOM.split(',');
   }
 
   _getMandatoryFields() {
-
+    const mandatoryFieldsDOM = (this.querySelector('mandatory-fields')) ? this.querySelector('mandatory-fields').innerText.replace(/[\n\s]*/g, '') : '';
+    const mandatoryFields = mandatoryFieldsDOM.split(',');
+    const allMandatoryFields = mandatoryFields.map((fields) => fields.split('&')).flat();
+    for (let field of allMandatoryFields) {
+      console.log(field);
+      /*this.shadowRoot.querySelector(`#${field}`).addEventListener('changed', (ev) => {
+        console.log(`dejando el campo ${ev.target}`);
+      });*/
+    }
+    return mandatoryFields;
   }
 
   connectedCallback() {
@@ -835,6 +844,7 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _createHighList(labelId, formGroup) {
+    formGroup.innerHTML = `<span id=${labelId}FAKE></span>`;
     const ref = firebase.database().ref('/' + labelId);
     const highSelectLabel = document.createElement('label');
     const highSelect = document.createElement('high-select');
@@ -863,8 +873,10 @@ export class FirebaseAutoform extends LitElement {
         });
         highSelect.children[selectedEl].selected = true;
         if (!this.shadowRoot.querySelector('#' + labelId)) {
-          formGroup.appendChild(highSelectLabel);
-          formGroup.appendChild(highSelect);
+          const fake = this.shadowRoot.querySelector(`#${labelId}FAKE`);
+          formGroup.insertBefore(highSelectLabel, fake);
+          formGroup.insertBefore(highSelect, fake);
+          formGroup.removeChild(fake);
           highSelect.value = elVal;
         }
         if (this.fieldsDesc[labelId]) {
