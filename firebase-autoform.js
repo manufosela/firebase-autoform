@@ -155,6 +155,9 @@ export class FirebaseAutoform extends LitElement {
       paper-button[toggles][active] {
         background: red;
       }
+      firebase-uploadfile {
+        --progress-width: 400px;
+      }
       label {
         display:block;
         font-size: 0.8em;
@@ -310,13 +313,6 @@ export class FirebaseAutoform extends LitElement {
   _getMandatoryFields() {
     const mandatoryFieldsDOM = (this.querySelector('mandatory-fields')) ? this.querySelector('mandatory-fields').innerText.replace(/[\n\s]*/g, '') : '';
     const mandatoryFields = mandatoryFieldsDOM.split(',');
-    const allMandatoryFields = mandatoryFields.map((fields) => fields.split('&')).flat();
-    for (let field of allMandatoryFields) {
-      console.log(field);
-      /*this.shadowRoot.querySelector(`#${field}`).addEventListener('changed', (ev) => {
-        console.log(`dejando el campo ${ev.target}`);
-      });*/
-    }
     return mandatoryFields;
   }
 
@@ -370,6 +366,18 @@ export class FirebaseAutoform extends LitElement {
         this.getData();
       }
     });
+  }
+
+  _addMandatoryFieldsEventListeners() {
+    const allMandatoryFields = this.mandatoryFields.map((fields) => fields.split('&')).flat();
+    for (let field of allMandatoryFields) {
+      console.log(field);
+      if (this.shadowRoot.querySelector(`#${field}`)) {
+        this.shadowRoot.querySelector(`#${field}`).addEventListener('change', (ev) => {
+          console.log(`dejando el campo ${ev.target}`);
+        });
+      }
+    }
   }
 
   _userLogged(obj) {
@@ -477,6 +485,7 @@ export class FirebaseAutoform extends LitElement {
             this._insertLegends();
             this._insertTooltips();
             this._makeCollapsibleGrps();
+            this._addMandatoryFieldsEventListeners();
             document.dispatchEvent(new CustomEvent('firebase-autoform-ready', {
               detail: {
                 path: this.path,
