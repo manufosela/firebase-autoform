@@ -89,6 +89,14 @@ export class FirebaseAutoform extends LitElement {
         --fields-max-width: 300px;
         --fieldset-border-color: #F50;
         --legend-bg-color: #DDD
+
+        --uploadfile-progress-bg-color, #eee;
+        --uploadfile-progress-color1: #09c;
+        --uploadfile-progress-color2: #f44;
+        --uploadfile-progress-width: 500px
+        --uploadfile-bgcolor-button: #106BA0;
+        --uploadfile-color-button: #FFF;
+        --uploadfile-progress-width: 400px;
       */
       :host {
         display: block;
@@ -156,7 +164,12 @@ export class FirebaseAutoform extends LitElement {
         background: red;
       }
       firebase-uploadfile {
-        --progress-width: 400px;
+        --progress-width: var(--uploadfile-progress-width, 400px);
+        --progress-bg-color: var(--uploadfile-progress-bg-color, #DDD);
+        --progress-color1: var(--uploadfile-progress-color1, #09c);
+        --progress-color2: var(--uploadfile-progress-color2, #f44);
+        --bgcolor-button: var(--uploadfile-bgcolor-button, #DDD);
+        --color-button: var(--uploadfile-color-button, #F50);
       }
       label {
         display:block;
@@ -306,13 +319,13 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _getCollapsibleGroups() {
-    const fieldsCollapGrpDOM = (this.querySelector('grp-collapsible')) ? this.querySelector('grp-collapsible').innerText.replace(/[\n\s]*/g, '') : '';
-    return fieldsCollapGrpDOM.split(',');
+    const fieldsCollapGrpDOM = (this.querySelector('grp-collapsible')) ? this.querySelector('grp-collapsible').innerText.replace(/[\n\s]*/g, '') : null;
+    return (fieldsCollapGrpDOM) ? fieldsCollapGrpDOM.split(',') : [];
   }
 
   _getMandatoryFields() {
-    const mandatoryFieldsDOM = (this.querySelector('mandatory-fields')) ? this.querySelector('mandatory-fields').innerText.replace(/[\n\s]*/g, '') : '';
-    const mandatoryFields = mandatoryFieldsDOM.split(',');
+    const mandatoryFieldsDOM = (this.querySelector('mandatory-fields')) ? this.querySelector('mandatory-fields').innerText.replace(/[\n\s]*/g, '') : null;
+    const mandatoryFields = (mandatoryFieldsDOM) ? mandatoryFieldsDOM.split(',') : [];
     return mandatoryFields;
   }
 
