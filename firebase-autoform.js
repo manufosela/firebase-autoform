@@ -278,6 +278,8 @@ export class FirebaseAutoform extends LitElement {
     this.bShowPath = false;
     this.loggedUser = '';
 
+    this.groups = {};
+
     this._setElId = this._setElId.bind(this);
     this._userLogged = this._userLogged.bind(this);
     this._userLogout = this._userLogout.bind(this);
@@ -376,7 +378,7 @@ export class FirebaseAutoform extends LitElement {
   updated(changedProperties) {
     changedProperties.forEach((oldValue, propName) => {
       if (propName === 'elId' && this.elId !== oldValue && oldValue !== undefined) {
-        this.getData();
+        this.getData().then(this._allIsReady);
       }
     });
   }
@@ -384,7 +386,6 @@ export class FirebaseAutoform extends LitElement {
   _addMandatoryFieldsEventListeners() {
     const allMandatoryFields = this.mandatoryFields.map((fields) => fields.split('&')).flat();
     for (let field of allMandatoryFields) {
-      console.log(field);
       if (this.shadowRoot.querySelector(`#${field}`)) {
         this.shadowRoot.querySelector(`#${field}`).addEventListener('change', (ev) => {
           console.log(`dejando el campo ${ev.target}`);
@@ -393,11 +394,21 @@ export class FirebaseAutoform extends LitElement {
     }
   }
 
+  _allIsReady() {
+    document.dispatchEvent(new CustomEvent('firebase-autoform-ready', {
+      detail: {
+        path: this.path,
+        id: this.elId,
+        obj: this
+      }
+    }));
+  }
+
   _userLogged(obj) {
     if (!this.user && obj.detail.user) {
       this.user = obj.detail.user.displayName;
       this.dataUser = obj.detail.user;
-      this.getData();
+      this.getData().then(this._allIsReady.bind(this));
     }
   }
 
@@ -487,37 +498,36 @@ export class FirebaseAutoform extends LitElement {
   }
 
   getData() {
-    let starredStatusRef = firebase.database().ref(this.path);
-    starredStatusRef.on('value', (snapshot) => {
-      this.data = snapshot.val();
-      this._analizeFields().then(resolve => {
-        return new Promise(r => {
-          this._insertFields(this.data[0]);
-          this.shadowRoot.querySelector('#spinner').active = false;
-          if (this.elId) {
-            this._insertLegends();
-            this._insertTooltips();
-            this._makeCollapsibleGrps();
-            this._addMandatoryFieldsEventListeners();
-            document.dispatchEvent(new CustomEvent('firebase-autoform-ready', {
-              detail: {
-                path: this.path,
-                id: this.elId,
-                obj: this
+    const myPromise = new Promise((resolve, reject) => {
+      let starredStatusRef = firebase.database().ref(this.path);
+      starredStatusRef.on('value', (snapshot) => {
+        this.data = snapshot.val();
+        this._analizeFields().then(value => {
+          const myPromise2 = new Promise(resolve2 => {
+            this._insertFields(this.data[0]).then(() => {
+              this.shadowRoot.querySelector('#spinner').active = false;
+              if (this.elId) {
+                this._insertLegends();
+                this._insertTooltips();
+                this._makeCollapsibleGrps();
               }
-            }));
-          }
-          r();
+              console.log('insertFields finish');
+            });
+            resolve2();
+          });
+          return myPromise2;
         });
+        resolve();
       });
     });
+    return myPromise;
   }
 
   _analizeFields() {
     this.shadowRoot.querySelector('#spinner').active = true;
     this.shadowRoot.querySelector('#formfieldlayer').textContent = '';
-    if (this.data[0]) {
-      return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
+      if (this.data[0]) {
         if (typeof this.data[0] === 'object') {
           this._simple = false;
           this._getParentKeys(resolve);
@@ -526,12 +536,15 @@ export class FirebaseAutoform extends LitElement {
           this._cleanError();
           let k = [ this.path.replace('/', '') ];
           this.shadowRoot.querySelector('#spinner').active = false;
-          let fieldForm = this._createField(k, typeof this.data[0]);
-          this.shadowRoot.querySelector('#formfieldlayer').appendChild(fieldForm);
-          resolve();
+          this._createField(k, typeof this.data[0]).then(fieldForm => {
+            this.shadowRoot.querySelector('#formfieldlayer').appendChild(fieldForm);
+            resolve();
+          });
         }
-      });
-    }
+      } else {
+        reject('No data[0] found');
+      }
+    });
   }
 
   _getParentKeys(resolve, reject) {
@@ -571,63 +584,97 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _insertLoggedUser(obj) {
-    const c = this._createFormGroup('loggedUser');
-    const loggedUser = (this.loggedUser !== '') ? this.loggedUser : 'logged-user';
-    const user = this._getLoggedUser();
-    const cssClass = (this.loggedUser !== '') ? '' : 'class="hidden"';
-    c.innerHTML = `
-        <paper-input type="text" label="${loggedUser}" id="__edit_user" readonly value="${user}" ${cssClass}></paper-input>
-      `;
-    if (!this.shadowRoot.querySelector('#__edit_user')) {
-      this.shadowRoot.querySelector('#formfieldlayer').appendChild(c);
-    }
+    this._createFormGroup('loggedUser').then(c => {
+      const loggedUser = (this.loggedUser !== '') ? this.loggedUser : 'logged-user';
+      const user = this._getLoggedUser();
+      const cssClass = (this.loggedUser !== '') ? '' : 'class="hidden"';
+      c.innerHTML = `
+          <paper-input type="text" label="${loggedUser}" id="__edit_user" readonly value="${user}" ${cssClass}></paper-input>
+        `;
+      if (!this.shadowRoot.querySelector('#__edit_user')) {
+        this.shadowRoot.querySelector('#formfieldlayer').appendChild(c);
+      }
+    });
   }
 
   _insertFields(obj) {
-    this._cleanError();
-    this._arrKeys = [];
-    this._insertLoggedUser(obj);
-    for (let keyObj in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, keyObj)) {
-        this._arrKeys.push(keyObj);
-        if (keyObj !== '__edit_user' && keyObj !== '__created_at') {
-          const fieldForm = this._getFieldForm(obj[keyObj], keyObj);
-          if (fieldForm) {
-            this.shadowRoot.querySelector('#formfieldlayer').appendChild(fieldForm);
+    return new Promise(resolve => {
+      const arrPromises = [];
+      this._cleanError();
+      this._arrKeys = [];
+      this._insertLoggedUser(obj);
+
+      const keys = Object.keys(obj);
+      let counter = 0;
+      let keyObj = keys[counter];
+
+      const fill = () => {
+        for (let fieldFormKey in this.groups) {
+          if (this.groups.hasOwnProperty(fieldFormKey)) {
+            if (fieldFormKey.search(/GRP_[a-zA-Z]*$/) !== -1) {
+              console.log(fieldFormKey);
+              this.shadowRoot.querySelector('#formfieldlayer').appendChild(this.groups[fieldFormKey]);
+            } else {
+              const regExp = new RegExp(/(GRP_[a-zA-Z]*).*/);
+              const parentFieldset = regExp.exec(fieldFormKey);
+              this.shadowRoot.querySelector('#' + parentFieldset[1]).appendChild(this.groups[fieldFormKey]);
+            }
           }
         }
+      };
+
+      const fn = () => {
+        counter++;
+        keyObj = keys[counter];
+        if (counter < keys.length) {
+          if (keyObj !== '__edit_user' && keyObj !== '__created_at') {
+            return this._getFieldForm(obj[keyObj], keyObj);
+          }
+        } else {
+          fill();
+          resolve();
+        }
+      };
+
+      let chain = this._getFieldForm(obj[keyObj], keyObj);
+      for (let key of keys) {
+        chain = chain.then(fn);
       }
-    }
+    });
   }
 
   _getFieldForm(propField, labelKey) {
-    let fieldForm;
+    let myPromise;
     if (typeof propField === 'object' && this._parentKeys.includes(labelKey)) {
       this.log('multifield multiple ' + labelKey);
-      fieldForm = this._createFormGroup(labelKey);
-      this._createListMult(labelKey, fieldForm);
+      myPromise = this._createFormGroup(labelKey).then((fieldForm) => {
+        return this._createListMult(labelKey, fieldForm);
+      });
     } else if (this._parentKeys.includes(labelKey)) {
-      fieldForm = this._createFormGroup(labelKey);
-      this._createHighList(labelKey, fieldForm);
+      myPromise = this._createFormGroup(labelKey).then((fieldForm) => {
+        return this._createHighList(labelKey, fieldForm);
+      });
       this.log('list ' + labelKey);
     } else if (typeof propField === 'object') {
-      fieldForm = this._createMF(labelKey, typeof propField[0]);
-      this.log('Multifield ' + labelKey);
+      myPromise = this._createMF(labelKey, typeof propField[0]);
+      console.log('insertado Multifield en ' + fieldForm.id + ' con id ' + labelKey);
     } else if (propField === true || propField === false) {
-      fieldForm = this._createCheckbox(labelKey);
-      this.log('checkbox ' + labelKey);
+      myPromise = this._createFormGroup(labelKey).then(fieldForm => {
+        return this._createCheckbox(labelKey, fieldForm);
+      });
     } else if (typeof propField === 'string' || typeof propField === 'number') {
-      fieldForm = this._createField(labelKey, typeof propField);
-      this.log('input ' + labelKey);
+      myPromise = this._createFormGroup(labelKey).then(fieldForm => {
+        return this._createField(labelKey, typeof propField, fieldForm);
+      });
     }
-    return fieldForm;
+    return myPromise;
   }
 
   _getGrpId(labelKey) {
     let grpId;
     const partsId = labelKey.split('-');
     if (partsId.length > 1) {
-      if (!!~labelKey.search(/_[0-9]*$/)) {
+      if (labelKey.search(/_[0-9]*$/) !== -1) {
         grpId = `GRP_${labelKey}`;
       } else {
         const grpName = partsId[0].replace(/[0-9]*/g, '');
@@ -640,14 +687,17 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _createFormGroup(labelKey, style) {
-    const grpId = this._getGrpId(labelKey);
-    let formGroupLayer = this.shadowRoot.querySelector(`#${grpId}`);
-    if (!formGroupLayer) {
-      formGroupLayer = (labelKey !== 'loggedUser') ? document.createElement('fieldset') : formGroupLayer = document.createElement('div');
-      formGroupLayer.id = grpId;
-      formGroupLayer.className = (style === 'flex') ? 'formGroupFlex' : 'formGroup';
-    }
-    return formGroupLayer;
+    return new Promise((resolve) => {
+      const grpId = this._getGrpId(labelKey);
+
+      //let formGroupLayer = this.shadowRoot.querySelector(`#${grpId}`);
+      if (!this.groups[grpId]) {
+        this.groups[grpId] = (labelKey !== 'loggedUser') ? document.createElement('fieldset') : document.createElement('div');
+        this.groups[grpId].id = grpId;
+        this.groups[grpId].className = (style === 'flex') ? 'formGroupFlex' : 'formGroup';
+      }
+      resolve(this.groups[grpId]);
+    });
   }
 
   _getLabels(labelId) {
@@ -685,52 +735,58 @@ export class FirebaseAutoform extends LitElement {
     return HTMLTag;
   }
 
-  _createField(labelId, typeobj) {
-    const c = this._createFormGroup(labelId);
-    if (!this.shadowRoot.querySelector('#' + labelId)) {
-      c.innerHTML += this._getHTMLTag(labelId, typeobj);
-    }
-    return c;
+  _createField(labelId, typeobj, fieldForm) {
+    return new Promise(resolve => {
+      if (!this.shadowRoot.querySelector('#' + labelId)) {
+        fieldForm.innerHTML += this._getHTMLTag(labelId, typeobj);
+      }
+      resolve(fieldForm);
+    });
   }
 
-  _createCheckbox(labelId) {
-    const c = this._createFormGroup(labelId);
-    const [labelShown, labelCleanId] = this._getLabels(labelId);
-    const hasVal = (this.elId && this.data[this.elId]);
-    const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
-    const checked = (hasVal) ? ((elVal === true) ? 'checked="true"' : '') : '';
-    const label = labelId.replace(/_/g, ' ');
-    const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
-    c.innerHTML += `
-      <div class="chbx-block"><div class="label">${labelCleanId}</div><paper-checkbox label="${labelId}" id="${labelId}" ${checked} ${readOnly}"></paper-checkbox></div>
-    `;
-    return c;
+  _createCheckbox(labelId, formGroup) {
+    return new Promise(resolve => {
+      const [labelShown, labelCleanId] = this._getLabels(labelId);
+      const hasVal = (this.elId && this.data[this.elId]);
+      const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
+      const checked = (hasVal) ? ((elVal === true) ? 'checked="true"' : '') : '';
+      const label = labelId.replace(/_/g, ' ');
+      const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
+      formGroup.innerHTML += `
+        <div class="chbx-block"><div class="label">${labelCleanId}</div><paper-checkbox label="${labelId}" id="${labelId}" ${checked} ${readOnly}"></paper-checkbox></div>
+      `;
+      resolve(formGroup);
+    });
   }
 
   _createMF(labelId, typeobj) {
-    const c = this._createFormGroup(labelId);
-    this._createMultiField(c, labelId, typeobj);
-    return c;
+    return new Promise(resolve => {
+      this._createFormGroup(labelId).then(c => {
+        this._createMultiField(c, labelId, typeobj);
+        resolve(c);
+      });
+    });
   }
 
   _createMultiField(container, labelId, typeobj) {
-    const c = this._createFormGroup(labelId);
-    this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
+    this._createFormGroup(labelId).then(c => {
+      this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
 
-    const id = labelId + '_' + this._counter[labelId];
-    const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
-    c.innerHTML += `
-      <paper-input type="${typeobj}" label="${labelId}" id="${id}" class="inlineblock" ${readOnly}>
-        <div class="slot" slot="prefix">[${typeobj}]</div>
-        <div class="slot" slot="suffix">${this._counter[labelId]}</div>
-      </paper-input>`;
-    const e = document.createElement('button');
-    e.id = 'btn_' + id;
-    e.innerHTML = '+';
-    e.setAttribute('typeobj', typeobj);
-    e.addEventListener('click', this._newMultiField.bind(this));
-    c.appendChild(e);
-    container.appendChild(c);
+      const id = labelId + '_' + this._counter[labelId];
+      const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
+      c.innerHTML += `
+        <paper-input type="${typeobj}" label="${labelId}" id="${id}" class="inlineblock" ${readOnly}>
+          <div class="slot" slot="prefix">[${typeobj}]</div>
+          <div class="slot" slot="suffix">${this._counter[labelId]}</div>
+        </paper-input>`;
+      const e = document.createElement('button');
+      e.id = 'btn_' + id;
+      e.innerHTML = '+';
+      e.setAttribute('typeobj', typeobj);
+      e.addEventListener('click', this._newMultiField.bind(this));
+      c.appendChild(e);
+      container.appendChild(c);
+    });
   }
 
   _newMultiField(ev, o) {
@@ -739,60 +795,79 @@ export class FirebaseAutoform extends LitElement {
     const container = ev.target.parentNode.parentNode;
     const typeobj = ev.target.getAttribute('typeobj');
     this._counter[labelId]++;
-    const c = this._createFormGroup(labelId);
-    if (!this.shadowRoot.querySelector('#' + labelId)) {
-      const id = labelId + '_' + this._counter[labelId];
-      const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
-      c.innerHTML += `
-        <paper-input type="${typeobj}" label="${labelId}" id="${id}" class="inlineblock" ${readOnly}>
-          <div class="slot" slot="prefix">[${typeobj}]</div>
-          <div class="slot" slot="suffix">${this._counter[labelId]}</div>
-        </paper-input>`;
-    }
-    container.appendChild(c);
+    this._createFormGroup(labelId).then(c => {
+      if (!this.shadowRoot.querySelector('#' + labelId)) {
+        const id = labelId + '_' + this._counter[labelId];
+        const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
+        c.innerHTML += `
+          <paper-input type="${typeobj}" label="${labelId}" id="${id}" class="inlineblock" ${readOnly}>
+            <div class="slot" slot="prefix">[${typeobj}]</div>
+            <div class="slot" slot="suffix">${this._counter[labelId]}</div>
+          </paper-input>`;
+      }
+      container.appendChild(c);
+    });
   }
 
+  _createPaperDropDown(container, formGroup, id, labelId, snap, index, elVal) {
+    const paperDropdownMenu = this._createPaperDropDownElement(id, labelId);
+    const paperListbox = this._createPaperListBox(snap);
+    paperDropdownMenu.appendChild(paperListbox);
+    container.appendChild(paperDropdownMenu);
+    if (index === 0) {
+      this._addPlusButton(id, container);
+    }
+    if (!this.shadowRoot.querySelector('#' + labelId)) {
+      this.log(elVal);
+      container.querySelector('paper-dropdown-menu').value = elVal;
+    }
+    this._counter[labelId] = index;
+  }
+
+  _createPaperDropDown2(container, formGroup, id, labelId, snap) {
+    const paperDropdownMenu = this._createPaperDropDownElement(id, labelId);
+    const paperListbox = this._createPaperListBox(snap);
+    paperDropdownMenu.appendChild(paperListbox);
+    container.appendChild(paperDropdownMenu);
+    if (this._counter[labelId] === 0) {
+      this._addPlusButton(id, container);
+    }
+    this._counter[labelId]++;
+  }
+
+
   _createListMult(labelId, formGroup) {
-    this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
-    const ref = firebase.database().ref('/' + labelId);
-    ref.once('value')
-      .then((snap) => {
-        if (!this.shadowRoot.querySelector('#' + labelId)) {
-          if (this.elId) {
-            this.data[this.elId][labelId].forEach((elVal, index) => {
-              const id = labelId + '_' + index;
-              const container = (index === 0) ? this._createFormGroup(id, 'flex') : this._createFormGroup(id);
-              const paperDropdownMenu = this._createPaperDropDownElement(id, labelId);
-              const paperListbox = this._createPaperListBox(snap);
-              paperDropdownMenu.appendChild(paperListbox);
-              container.appendChild(paperDropdownMenu);
-              if (index === 0) {
-                this._addPlusButton(id, container);
-              }
-              if (!this.shadowRoot.querySelector('#' + labelId)) {
-                formGroup.appendChild(container);
-                this.log(elVal);
-                container.querySelector('paper-dropdown-menu').value = elVal;
-              }
-              this._counter[labelId] = index;
-            });
-          } else {
-            const id = labelId + '_' + this._counter[labelId];
-            const container = this._createFormGroup(id, 'flex');
-            const paperDropdownMenu = this._createPaperDropDownElement(id, labelId);
-            const paperListbox = this._createPaperListBox(snap);
-            paperDropdownMenu.appendChild(paperListbox);
-            container.appendChild(paperDropdownMenu);
-            if (this._counter[labelId] === 0) {
-              this._addPlusButton(id, container);
+    return new Promise(resolve => {
+      this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
+      const ref = firebase.database().ref('/' + labelId);
+      ref.once('value')
+        .then((snap) => {
+          if (!this.shadowRoot.querySelector('#' + labelId)) {
+            if (this.elId) {
+              this.data[this.elId][labelId].forEach((elVal, index) => {
+                const id = labelId + '_' + index;
+                if (index === 0) {
+                  this._createFormGroup(id, 'flex').then(container => {
+                    this._createPaperDropDown(container, formGroup, id, labelId, snap, index, elVal);
+                    resolve(container);
+                  });
+                } else {
+                  this._createFormGroup(id).then(container => {
+                    this._createPaperDropDown(container, formGroup, id, labelId, snap, index, elVal);
+                    resolve(container);
+                  });
+                }
+              });
+            } else {
+              const id = labelId + '_' + this._counter[labelId];
+              this._createFormGroup(id, 'flex').then(container => {
+                this._createPaperDropDown2(container, formGroup, id, labelId, snap);
+                resolve(container);
+              });
             }
-            if (!this.shadowRoot.querySelector('#' + labelId)) {
-              formGroup.appendChild(container);
-            }
-            this._counter[labelId]++;
           }
-        }
-      });
+        });
+    });
   }
 
   _addPlusButton(id, container) {
@@ -846,65 +921,67 @@ export class FirebaseAutoform extends LitElement {
     const ref = firebase.database().ref('/' + labelId);
     const paperDropdownMenu = this._createPaperDropDownElement(id, labelId);
     const paperListbox = this._createPaperListBoxElement();
-    const container = this._createFormGroup(labelId);
-    ref.once('value')
-      .then((snap) => {
-        snap.forEach((item) => {
-          const itemVal = item.val();
-          const paperItem = document.createElement('paper-item');
-          paperItem.innerHTML = itemVal;
-          paperListbox.appendChild(paperItem);
+    this._createFormGroup(labelId).then(container=>{
+      ref.once('value')
+        .then((snap) => {
+          snap.forEach((item) => {
+            const itemVal = item.val();
+            const paperItem = document.createElement('paper-item');
+            paperItem.innerHTML = itemVal;
+            paperListbox.appendChild(paperItem);
+          });
+          if (!this.shadowRoot.querySelector('#' + labelId)) {
+            paperDropdownMenu.appendChild(paperListbox);
+            this._createFormGroup(labelId).then(c => {
+              this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
+              container.appendChild(paperDropdownMenu);
+              formGroup.appendChild(container);
+            });
+          }
         });
-        if (!this.shadowRoot.querySelector('#' + labelId)) {
-          paperDropdownMenu.appendChild(paperListbox);
-          let c = this._createFormGroup(labelId);
-          this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
-          container.appendChild(paperDropdownMenu);
-          formGroup.appendChild(container);
-        }
-      });
+    });
   }
 
   _createHighList(labelId, formGroup) {
-    formGroup.innerHTML = `<span id=${labelId}FAKE></span>`;
-    const ref = firebase.database().ref('/' + labelId);
-    const highSelectLabel = document.createElement('label');
-    const highSelect = document.createElement('high-select');
-    highSelect.id = labelId;
-    const [labelShown, labelCleanId] = this._getLabels(labelId);
-    highSelect.setAttribute('label', labelCleanId);
-    highSelect.setAttribute('search', 'search');
-    highSelect.setAttribute('arrow', 'arrow');
-    highSelectLabel.innerText = labelCleanId;
-    const hasVal = (this.elId && this.data[this.elId]);
-    const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
-    let selectedEl = 0;
-    let highOption = document.createElement('high-option');
-    highOption.innerHTML = '';
-    highSelect.appendChild(highOption);
-    ref.once('value')
-      .then((snap) => {
-        snap.forEach((item) => {
-          let itemVal = item.val();
-          highOption = document.createElement('high-option');
-          highOption.innerHTML = itemVal;
-          if (itemVal === elVal) {
-            selectedEl = parseInt(item.key) + 1;
+    return new Promise(resolve => {
+      const ref = firebase.database().ref('/' + labelId);
+      const highSelectLabel = document.createElement('label');
+      const highSelect = document.createElement('high-select');
+      highSelect.id = labelId;
+      const [labelShown, labelCleanId] = this._getLabels(labelId);
+      highSelect.setAttribute('label', labelCleanId);
+      highSelect.setAttribute('search', 'search');
+      highSelect.setAttribute('arrow', 'arrow');
+      highSelectLabel.innerText = labelCleanId;
+      const hasVal = (this.elId && this.data[this.elId]);
+      const elVal = (hasVal) ? this.data[this.elId][labelId] : '';
+      let selectedEl = 0;
+      let highOption = document.createElement('high-option');
+      highOption.innerHTML = '';
+      highSelect.appendChild(highOption);
+      ref.once('value')
+        .then((snap) => {
+          snap.forEach((item) => {
+            let itemVal = item.val();
+            highOption = document.createElement('high-option');
+            highOption.innerHTML = itemVal;
+            if (itemVal === elVal) {
+              selectedEl = parseInt(item.key) + 1;
+            }
+            highSelect.appendChild(highOption);
+          });
+          highSelect.children[selectedEl].selected = true;
+          if (!this.shadowRoot.querySelector('#' + labelId)) {
+            formGroup.appendChild(highSelectLabel);
+            formGroup.appendChild(highSelect);
+            highSelect.value = elVal;
           }
-          highSelect.appendChild(highOption);
+          if (this.fieldsDesc[labelId]) {
+            this._addEventsTooltip(labelId);
+          }
+          resolve(formGroup);
         });
-        highSelect.children[selectedEl].selected = true;
-        if (!this.shadowRoot.querySelector('#' + labelId)) {
-          const fake = this.shadowRoot.querySelector(`#${labelId}FAKE`);
-          formGroup.insertBefore(highSelectLabel, fake);
-          formGroup.insertBefore(highSelect, fake);
-          formGroup.removeChild(fake);
-          highSelect.value = elVal;
-        }
-        if (this.fieldsDesc[labelId]) {
-          this._addEventsTooltip(labelId);
-        }
-      });
+    });
   }
 
   _createListMS(labelId, formGroup) {
