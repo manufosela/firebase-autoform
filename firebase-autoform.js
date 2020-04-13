@@ -378,7 +378,7 @@ export class FirebaseAutoform extends LitElement {
   updated(changedProperties) {
     changedProperties.forEach((oldValue, propName) => {
       if (propName === 'elId' && this.elId !== oldValue && oldValue !== undefined) {
-        this.getData().then(this._allIsReady);
+        this.getData().then(this._allIsReady.bind(this));
       }
     });
   }
@@ -526,6 +526,7 @@ export class FirebaseAutoform extends LitElement {
   _analizeFields() {
     this.shadowRoot.querySelector('#spinner').active = true;
     this.shadowRoot.querySelector('#formfieldlayer').textContent = '';
+    this.groups = {};
     return new Promise((resolve, reject) => {
       if (this.data[0]) {
         if (typeof this.data[0] === 'object') {
@@ -612,7 +613,6 @@ export class FirebaseAutoform extends LitElement {
         for (let fieldFormKey in this.groups) {
           if (this.groups.hasOwnProperty(fieldFormKey)) {
             if (fieldFormKey.search(/GRP_[a-zA-Z]*$/) !== -1) {
-              console.log(fieldFormKey);
               this.shadowRoot.querySelector('#formfieldlayer').appendChild(this.groups[fieldFormKey]);
             } else {
               const regExp = new RegExp(/(GRP_[a-zA-Z]*).*/);
@@ -974,8 +974,8 @@ export class FirebaseAutoform extends LitElement {
           if (!this.shadowRoot.querySelector('#' + labelId)) {
             formGroup.appendChild(highSelectLabel);
             formGroup.appendChild(highSelect);
-            highSelect.value = elVal;
           }
+          highSelect.value = elVal;
           if (this.fieldsDesc[labelId]) {
             this._addEventsTooltip(labelId);
           }
