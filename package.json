@@ -1,7 +1,7 @@
 {
   "name": "firebase-autoform",
   "description": "Lit-Element webcomponent firebase-autoform",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "main": "firebase-autoform.js",
   "repository": {
     "type": "git",
@@ -28,7 +28,7 @@
     "@polymer/paper-listbox": "^3.0.1",
     "@polymer/paper-spinner": "^3.0.2",
     "firebase": "^6.6.2",
-    "firebase-uploadfile": "^1.3.3",
+    "firebase-uploadfile": "^1.3.4",
     "high-select": "^0.2.0",
     "lit-element": "^2.1.0"
   },

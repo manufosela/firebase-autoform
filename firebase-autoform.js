@@ -304,7 +304,10 @@ export class FirebaseAutoform extends LitElement {
 
   _setUploadedFileName(ev) {
     const name = ev.detail.name;
-    this.shadowRoot.querySelector('[name="' + name + '"').value = ev.detail.downloadURL;
+    const id = ev.detail.id;
+    if (this.id === id) {
+      this.shadowRoot.querySelector('[name="' + name + '"').value = ev.detail.downloadURL;
+    }
   }
 
   _getFieldDesc() {
