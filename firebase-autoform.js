@@ -526,7 +526,8 @@ export class FirebaseAutoform extends LitElement {
     for (let key of this._arrKeys) {
       let domElement = this.shadowRoot.querySelector(`#${key}`);
       if (domElement) {
-        domElement.addEventListener('change', (ev)=> {
+        const event = (domElement.tagName === 'PAPER-TEXTAREA') ? 'value-changed' : 'change';
+        domElement.addEventListener(event, (ev)=> {
           this.fieldChanged = ev.target.id;
           this.save();
           console.log(`${ev.target.id} ha cambiado`);
