@@ -464,10 +464,22 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _showTooltip(ev) {
+    clearTimeout(this.tooltipTimeout);
+    this.tooltip.style.opacity = 1;
     this.tooltip.classList.add('show');
     this._tooltip(ev.target, {
       content: this.fieldsDesc[ev.target.id]
     });
+    let val = 1;
+    setTimeout(() => {
+      const tooltipInterval = setInterval(()=> {
+        val -= 0.05;
+        this.tooltip.style.opacity =  val;
+        if (val <= 0) {
+          clearInterval(tooltipInterval);
+        }
+      }, 50);
+    }, 3000);
   }
 
   _hideTooltip(ev) {
