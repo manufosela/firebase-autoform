@@ -514,7 +514,7 @@ export class FirebaseAutoform extends LitElement {
                 this._insertTooltips();
                 this._makeCollapsibleGrps();
               }
-              console.log('insertFields finish');
+              this.log('insertFields finish');
             });
             resolve2();
           });
@@ -605,10 +605,10 @@ export class FirebaseAutoform extends LitElement {
     return new Promise(resolve => {
       const arrPromises = [];
       this._cleanError();
-      this._arrKeys = [];
       this._insertLoggedUser(obj);
 
       const keys = Object.keys(obj);
+      this._arrKeys = keys;
       let counter = 0;
       let keyObj = keys[counter];
 
@@ -630,7 +630,6 @@ export class FirebaseAutoform extends LitElement {
         counter++;
         keyObj = keys[counter];
         if (counter < keys.length) {
-          this._arrKeys.push(keyObj);
           if (keyObj !== '__edit_user' && keyObj !== '__created_at') {
             return this._getFieldForm(obj[keyObj], keyObj);
           }
