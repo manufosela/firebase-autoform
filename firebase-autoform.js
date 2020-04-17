@@ -503,7 +503,7 @@ export class FirebaseAutoform extends LitElement {
   getData() {
     const myPromise = new Promise((resolve, reject) => {
       let starredStatusRef = firebase.database().ref(this.path);
-      starredStatusRef.on('value', (snapshot) => {
+      starredStatusRef.once('value').then((snapshot) => {
         this.data = snapshot.val();
         this._analizeFields().then(value => {
           const myPromise2 = new Promise(resolve2 => {
@@ -630,6 +630,7 @@ export class FirebaseAutoform extends LitElement {
         counter++;
         keyObj = keys[counter];
         if (counter < keys.length) {
+          this._arrKeys.push(keyObj);
           if (keyObj !== '__edit_user' && keyObj !== '__created_at') {
             return this._getFieldForm(obj[keyObj], keyObj);
           }
@@ -639,6 +640,7 @@ export class FirebaseAutoform extends LitElement {
         }
       };
 
+      keyObj = keys[counter];
       let chain = this._getFieldForm(obj[keyObj], keyObj);
       for (let key of keys) {
         chain = chain.then(fn);
