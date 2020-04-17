@@ -56,15 +56,27 @@
               <li>[elId] (String)</li>
               <li>[waiting-msg] (String)</li>
               <li>[readonly] (Boolean)</li>
+              <li>[auto-save] (Boolean)</li>
               <li>[logged-user] (String)</li>
-              <li>[textarea-fields] (separated comma list)</li>
-              <li>[readonly-fields] (separated comma list)</li>
             </ul>
             <br/><br/>
             <h3>Public Properties</h3>
             <ul>
               <li>data (Object)</li>
               <li>dataUser (Object)</li>
+            </ul>
+          </section>
+          <section>
+            <h3>Child nodes</h3>
+            <ul>
+              <li>&lt;textarea-fields&gt;A1-FIELD_1,A2-FIELD_2,[...],N1-FIELD_N&lt;/textarea-fields&gt;</li>
+              <li>&lt;readonly-fields&gt;B1-FIELD_1,B1-FIELD_2,[...],N1-FIELD_N&lt;/readonly-fields&gt;</li>
+              <li>&lt;fileupload-fields&gt;C1-FIELD_1,B1-FIELD_2,[...],N1-FIELD_N&lt;/fileupload-fields&gt;</li>
+              <li>&lt;grp-names&gt;A=GRP_NAME_A,B=GRP_NAME_B,[...],N=GRP_NAME_N&lt;/grp-names&gt;</li>
+              <li>&lt;grp-collapsible&gt;A,B,[...],N&lt;/grp-collapsible&gt;</li>
+              <li>&lt;description-field&gt;A1-FIELD_1=Tooltip description to field_1&lt;/description-field&gt;</li>
+              <li>&lt;description-field&gt;B1-FIELD_1|B1-FIELD_2=Tooltip description to field_1 and field_2&lt;/description-field&gt;</li>
+              <li>&lt;description-field&gt;N1-FIELD_N=Tooltip description to field_n&lt;/description-field&gt;</li>
             </ul>
           </section>
           <section>
@@ -101,7 +113,7 @@
         --fields-max-width: 600px;
       }
     </style>
-    <firebase-autoform id="fbaf1" path="/peliculas" el-id="6"  logged-user="Insertado por" show-path="true">
+    <firebase-autoform id="fbaf1" path="/peliculas" el-id="6"  logged-user="Insertado por" show-path="true" auto-save="true">
       <textarea-fields>C02-título</textarea-fields>
       <readonly-fields>C02-título</readonly-fields>
       <fileupload-fields>A02-carátula</fileupload-fields>

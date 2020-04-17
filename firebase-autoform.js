@@ -60,6 +60,10 @@ export class FirebaseAutoform extends LitElement {
       fileuploadFields: {
         type: Array
       },
+      autoSave: {
+        type: Boolean,
+        attribute: 'auto-save'
+      },
       data: {
         type: Object
       },
@@ -261,6 +265,22 @@ export class FirebaseAutoform extends LitElement {
         border-bottom-color: #333;
         top: -13px;
       }
+      .bubbleSaved {
+        content:"Saved";
+        position:absolute;
+        height:1.5em;
+        line-height:1.5em;
+        padding:0 .46em;
+        text-align:center;
+        text-shadow:0 0.063em 0 rgba(0,0,0,.2);
+        background-color: #F93;
+        color: #FFF;
+        width: 100px;
+        box-shadow:0 0.063em 0.063em rgba(0,0,0,.2);
+        border-radius:4em;
+        z-index:1;
+        opacity:0;
+      }
     `;
   }
 
@@ -277,6 +297,8 @@ export class FirebaseAutoform extends LitElement {
     this.bLog = false;
     this.bShowPath = false;
     this.loggedUser = '';
+    this.autosave = false;
+    this.fieldChanged = '';
 
     this.groups = {};
 
@@ -500,6 +522,19 @@ export class FirebaseAutoform extends LitElement {
     }
   }
 
+  _autoSaveEvents() {
+    for (let key of this._arrKeys) {
+      let domElement = this.shadowRoot.querySelector(`#${key}`);
+      if (domElement) {
+        domElement.addEventListener('change', (ev)=> {
+          this.fieldChanged = ev.target.id;
+          this.save();
+          console.log(`${ev.target.id} ha cambiado`);
+        });
+      }
+    }
+  }
+
   getData() {
     const myPromise = new Promise((resolve, reject) => {
       let starredStatusRef = firebase.database().ref(this.path);
@@ -513,6 +548,9 @@ export class FirebaseAutoform extends LitElement {
                 this._insertLegends();
                 this._insertTooltips();
                 this._makeCollapsibleGrps();
+                if (this.autoSave) {
+                  this._autoSaveEvents();
+                }
               }
               this.log('insertFields finish');
             });
@@ -1098,6 +1136,24 @@ export class FirebaseAutoform extends LitElement {
     return data;
   }
 
+  _showBubbleFieldMsg(bubble, el) {
+    const offset = 40;
+    const bubbleTop = el.offsetTop + 10;
+    bubble.style.opacity = 1;
+    bubble.style.top = bubbleTop + 'px';
+    bubble.style.left = (el.offsetLeft + 150) + 'px';
+    let opacity = 1;
+    let idInterval = setInterval(() => {
+      const val = parseInt(bubble.style.top) - 2;
+      if (val < bubbleTop - offset) {
+        clearInterval(idInterval);
+      }
+      opacity -= 0.05;
+      bubble.style.opacity = opacity;
+      bubble.style.top = val + 'px';
+    }, 40);
+  }
+
   _saveFirebase(data) {
     if (Object.keys(data).length !== 0) {
       let nextId = this.elId || parseInt(Object.keys(this.data).pop()) + 1;
@@ -1113,7 +1169,14 @@ export class FirebaseAutoform extends LitElement {
           this._showMsgPopup(error.message);
           console.log(error);
         } else {
-          this._showMsgPopup('Datos guardados correctamente', callbackFn);
+          if (this.fieldChanged !== '') {
+            const el = this.shadowRoot.querySelector('#' + this.fieldChanged);
+            this.fieldChanged = '';
+            const bubble = this.shadowRoot.querySelector('#bubbleSaved');
+            this._showBubbleFieldMsg(bubble, el);
+          } else {
+            this._showMsgPopup('Datos guardados correctamente', callbackFn);
+          }
         }
       });
     }
@@ -1133,10 +1196,11 @@ export class FirebaseAutoform extends LitElement {
         <div class="container">
           <section>
             <div id="formfieldlayer"></div>    
-            ${this.readonly ? html`` : (this.data) !== undefined ? html`<paper-button class="save" raised @click="${this.save}">${(this.elId) ? html`Update [ID ${this.elId}]` : html`Insert new element`}</paper-button>` : html``}
+            ${this.readonly ? html`` : (this.data) !== undefined ? html`<paper-button id="saveBtn" class="save" raised @click="${this.save}">${(this.elId) ? html`Update [ID ${this.elId}]` : html`Insert new element`}</paper-button>` : html``}
             <paper-dialog id="mensaje_popup"></paper-dialog>
           </section>
         </div>
+        <div id="bubbleSaved" class="invisible bubbleSaved">Saved</div>
       ` : html`<div class="waiting">Waiting for login...</div>`}
     `;
   }
