@@ -92,7 +92,8 @@ export class FirebaseAutoform extends LitElement {
         --color-save-btn: blue;
         --fields-max-width: 300px;
         --fieldset-border-color: #F50;
-        --legend-bg-color: #DDD
+        --legend-bg-color: #DDD;
+        --label-color: #F30;
 
         --uploadfile-progress-bg-color, #eee;
         --uploadfile-progress-color1: #09c;
@@ -115,7 +116,7 @@ export class FirebaseAutoform extends LitElement {
       .path { margin:0; padding: 20px; font-size: 2rem; color: var(--path-title--color) }
       .formGroupFlex { display:flex; }
       .chbx-block { display:flex; margin: 15px 0; }
-      .chbx-block .label { font-size: 0.8rem; }
+      .chbx-block .label { font-size: 0.7rem; color:var(--label-color, #F30); }
       .chbx-block paper-checkbox { margin-left: 1rem; }
       
       .container {
@@ -132,8 +133,12 @@ export class FirebaseAutoform extends LitElement {
       paper-listbox {
         cursor: pointer;
       }
-      paper-input, paper-dropdown-menu, high-select {
+      paper-input, paper-dropdown-menu, high-select, select, paper-textarea {
         width: var(--fields-max-width, 300px);
+        --secondary-text-color: var(--label-color, #F30);
+      }
+      paper-input:host(label) {
+        font-weight:bold;
       }
 
       paper-spinner.blue::shadow .circle {
@@ -177,13 +182,15 @@ export class FirebaseAutoform extends LitElement {
       }
       label {
         display:block;
-        font-size: 0.8em;
+        font-size: 0.7em;
         font-family: 'Roboto', 'Noto', sans-serif;
+        color: var(--label---color-button, #F30);
+        margin-bottom:5px;
       }
       fieldset {
         border: 1px solid var(--fieldset-border-color, #F50);
         border-radius: 20px;
-        padding: 20px;
+        padding: 14px;
         margin: 10px;
         width: var(--fields-max-width, 300px);
       }
@@ -195,6 +202,10 @@ export class FirebaseAutoform extends LitElement {
         background: var(--legend-bg-color, #DDD);
         border-radius: 10px;
         color: var(--fieldset-border-color, #F50);
+      }
+      select {
+        border: 0;
+        border-bottom: 1pxc solid #000;
       }
       button {
         width: 20px;
@@ -245,7 +256,7 @@ export class FirebaseAutoform extends LitElement {
       }
       .collapsed {
         overflow: hidden;
-        height: 10px;
+        height: 5px;
       }
       .toggle {
         cursor: pointer;
@@ -288,7 +299,7 @@ export class FirebaseAutoform extends LitElement {
     super();
     this.path = '/';
 
-    this.elId = null;
+    this.elId = null; /* Atributo id del elemento firebase-autoform */
     this.data = null;
     this.dataUser = null;
     this._parentKeys = [];
@@ -391,7 +402,7 @@ export class FirebaseAutoform extends LitElement {
     document.removeEventListener('firebase-autolist-selectid', this._setElId);
     document.removeEventListener('firebase-file-storage-uploaded', this._setUploadedFileName);
     for (let field in this.fieldsDesc) {
-      if (this.fieldsDesc.hasOwnProperty(field)) {
+      if (Object.prototype.hasOwnProperty.call(this.fieldsDesc, field)) {
         const el = this.shadowRoot.querySelector(`#${field}`);
         el.removeEventListener('click', this._showTooltip);
         el.removeEventListener('mouseover', this._showTooltip);
@@ -497,7 +508,7 @@ export class FirebaseAutoform extends LitElement {
 
   _insertTooltips() {
     for (let field in this.fieldsDesc) {
-      if (this.fieldsDesc.hasOwnProperty(field)) {
+      if (Object.prototype.hasOwnProperty.call(this.fieldsDesc, field)) {
         this._addEventsTooltip(field);
       }
     }
@@ -542,7 +553,13 @@ export class FirebaseAutoform extends LitElement {
         domElement.addEventListener(event, (ev)=> {
           this.fieldChanged = ev.target.id;
           this.save();
-          console.log(`${ev.target.id} ha cambiado`);
+        });
+        domElement.addEventListener('focus', (ev) => {
+          let pNode = ev.target.parentNode;
+          pNode = (pNode.id === '') ? pNode.parentNode : pNode;
+          if (pNode.classList.toString().includes('collapsed')) {
+            pNode.classList.remove('collapsed');
+          }
         });
       }
     }
@@ -665,7 +682,7 @@ export class FirebaseAutoform extends LitElement {
 
       const fill = () => {
         for (let fieldFormKey in this.groups) {
-          if (this.groups.hasOwnProperty(fieldFormKey)) {
+          if (Object.prototype.hasOwnProperty.call(this.groups, fieldFormKey)) {
             if (fieldFormKey.search(/GRP_[a-zA-Z]*$/) !== -1) {
               this.shadowRoot.querySelector('#formfieldlayer').appendChild(this.groups[fieldFormKey]);
             } else {
@@ -712,7 +729,6 @@ export class FirebaseAutoform extends LitElement {
       this.log('list ' + labelKey);
     } else if (typeof propField === 'object') {
       myPromise = this._createMF(labelKey, typeof propField[0]);
-      console.log('insertado Multifield en ' + fieldForm.id + ' con id ' + labelKey);
     } else if (propField === true || propField === false) {
       myPromise = this._createFormGroup(labelKey).then(fieldForm => {
         return this._createCheckbox(labelKey, fieldForm);
@@ -782,9 +798,7 @@ export class FirebaseAutoform extends LitElement {
       `;
     } else {
       HTMLTag = `
-        <paper-input type="${typeobj}" label="${labelCleanId}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}>
-          <div class="slot" slot="prefix">[${typeobj}]</div>
-        </paper-input>
+        <paper-input type="${typeobj}" label="${labelCleanId}" id="${labelId}" value="${(hasVal) ? elVal : ''}" ${readOnly}></paper-input>
       `;
     }
     return HTMLTag;
@@ -864,133 +878,40 @@ export class FirebaseAutoform extends LitElement {
     });
   }
 
-  _createPaperDropDown(container, formGroup, id, labelId, snap, index, elVal) {
-    const paperDropdownMenu = this._createPaperDropDownElement(id, labelId);
-    const paperListbox = this._createPaperListBox(snap);
-    paperDropdownMenu.appendChild(paperListbox);
-    container.appendChild(paperDropdownMenu);
-    if (index === 0) {
-      this._addPlusButton(id, container);
-    }
-    if (!this.shadowRoot.querySelector('#' + labelId)) {
-      this.log(elVal);
-      container.querySelector('paper-dropdown-menu').value = elVal;
-    }
-    this._counter[labelId] = index;
+  _createSelectMultiple(labelId, snap) {
+    const select = document.createElement('select');
+    select.id = labelId;
+    select.setAttribute('multiple', 'true');
+    snap.forEach((item) => {
+      const option = document.createElement('option');
+      const itemVal = item.val();
+      option.value = itemVal;
+      option.innerText = itemVal;
+      if (this.data[this.elId][labelId]) {
+        if (this.data[this.elId][labelId].includes(itemVal)) {
+          option.setAttribute('selected', 'true');
+        }
+      }
+      select.appendChild(option);
+    });
+    return select;
   }
-
-  _createPaperDropDown2(container, formGroup, id, labelId, snap) {
-    const paperDropdownMenu = this._createPaperDropDownElement(id, labelId);
-    const paperListbox = this._createPaperListBox(snap);
-    paperDropdownMenu.appendChild(paperListbox);
-    container.appendChild(paperDropdownMenu);
-    if (this._counter[labelId] === 0) {
-      this._addPlusButton(id, container);
-    }
-    this._counter[labelId]++;
-  }
-
 
   _createListMult(labelId, formGroup) {
     return new Promise(resolve => {
-      this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
       const ref = firebase.database().ref('/' + labelId);
       ref.once('value')
         .then((snap) => {
           if (!this.shadowRoot.querySelector('#' + labelId)) {
-            if (this.elId) {
-              this.data[this.elId][labelId].forEach((elVal, index) => {
-                const id = labelId + '_' + index;
-                if (index === 0) {
-                  this._createFormGroup(id, 'flex').then(container => {
-                    this._createPaperDropDown(container, formGroup, id, labelId, snap, index, elVal);
-                    resolve(container);
-                  });
-                } else {
-                  this._createFormGroup(id).then(container => {
-                    this._createPaperDropDown(container, formGroup, id, labelId, snap, index, elVal);
-                    resolve(container);
-                  });
-                }
-              });
-            } else {
-              const id = labelId + '_' + this._counter[labelId];
-              this._createFormGroup(id, 'flex').then(container => {
-                this._createPaperDropDown2(container, formGroup, id, labelId, snap);
-                resolve(container);
-              });
-            }
-          }
-        });
-    });
-  }
-
-  _addPlusButton(id, container) {
-    let addButton = this.shadowRoot.querySelector(`#${id}`);
-    if (!addButton) {
-      addButton = document.createElement('button');
-      addButton.id = 'btn_' + id;
-      addButton.innerHTML = '+';
-      addButton.addEventListener('click', this._newListMult.bind(this));
-      container.appendChild(addButton);
-    }
-  }
-
-  _createPaperListBox(snap) {
-    const paperListbox = document.createElement('paper-listbox');
-    paperListbox.slot = 'dropdown-content';
-    paperListbox.className = 'dropdown-content';
-    snap.forEach((item) => {
-      const itemVal = item.val();
-      const paperItem = document.createElement('paper-item');
-      paperItem.innerHTML = itemVal;
-      paperListbox.appendChild(paperItem);
-    });
-    return paperListbox;
-  }
-
-  _createPaperDropDownElement(id, labelId) {
-    let paperDropdownMenu = this.shadowRoot.querySelector(`#${id}`);
-    if (!paperDropdownMenu) {
-      paperDropdownMenu = document.createElement('paper-dropdown-menu');
-      paperDropdownMenu.id = id;
-      const [labelShown, labelCleanId] = this._getLabels(labelId);
-      paperDropdownMenu.label = labelCleanId;
-    }
-    return paperDropdownMenu;
-  }
-
-  _createPaperListBoxElement() {
-    const paperListbox = document.createElement('paper-listbox');
-    paperListbox.slot = 'dropdown-content';
-    paperListbox.className = 'dropdown-content';
-    return paperListbox;
-  }
-
-  _newListMult(ev, o) {
-    let labelId = ev.target.id.replace(/^btn_/, '');
-    labelId = labelId.replace(/_\d*$/, '');
-    const formGroup = ev.target.parentNode.parentNode;
-    this._counter[labelId]++;
-    const id = labelId + '_' + this._counter[labelId];
-    const ref = firebase.database().ref('/' + labelId);
-    const paperDropdownMenu = this._createPaperDropDownElement(id, labelId);
-    const paperListbox = this._createPaperListBoxElement();
-    this._createFormGroup(labelId).then(container=>{
-      ref.once('value')
-        .then((snap) => {
-          snap.forEach((item) => {
-            const itemVal = item.val();
-            const paperItem = document.createElement('paper-item');
-            paperItem.innerHTML = itemVal;
-            paperListbox.appendChild(paperItem);
-          });
-          if (!this.shadowRoot.querySelector('#' + labelId)) {
-            paperDropdownMenu.appendChild(paperListbox);
-            this._createFormGroup(labelId).then(c => {
-              this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
-              container.appendChild(paperDropdownMenu);
-              formGroup.appendChild(container);
+            this._createFormGroup(labelId).then(container => {
+              const [labelShown, labelCleanId] = this._getLabels(labelId);
+              const label = document.createElement('label');
+              label.for = labelShown;
+              label.innerText = labelShown;
+              const select = this._createSelectMultiple(labelId, snap);
+              container.appendChild(label);
+              container.appendChild(select);
+              resolve(container);
             });
           }
         });
@@ -1116,10 +1037,13 @@ export class FirebaseAutoform extends LitElement {
     this._saveFirebase(data);
   }
   _getVal(el) {
-    let noPaperTags = ['FIREBASE-UPLOADFILE', 'HIGH-SELECT'];
+    let noPaperTags = ['FIREBASE-UPLOADFILE', 'HIGH-SELECT', 'SELECT'];
     let val = (noPaperTags.includes(el.tagName)) ? el.value : (el.$.input) ? el.$.input.value : el.value;
     if (el.tagName === 'PAPER-CHECKBOX') {
       val = (val === 'on') ? true : false;
+    }
+    if (el.tagName === 'SELECT') {
+      val = Array.from(el.querySelectorAll("option:checked"), e => e.value);
     }
     return val;
   }
