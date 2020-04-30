@@ -876,7 +876,6 @@ export class FirebaseAutoform extends LitElement {
 
   _newMultiField(ev) {
     const labelId = ev.target.dataset.group;
-    console.log(labelId, this._counter[labelId]);
     const typeobj = ev.target.getAttribute('typeobj');
     const referenceNode = this.shadowRoot.querySelector('#' + labelId + '_' + this._counter[labelId]);
     this._counter[labelId]++;
@@ -899,7 +898,6 @@ export class FirebaseAutoform extends LitElement {
     const labelId = ev.target.dataset.group;
     const [labelShown, labelCleanId] = this._getLabels(labelId);
     if (this._counter[labelId] > 0) {
-      console.log(this.shadowRoot.querySelector('#' + labelId + '_' + this._counter[labelId]));
       this.shadowRoot.querySelector('#' + labelId + '_' + this._counter[labelId]).remove();
       this._counter[labelId]--;
       if (this._counter[labelId] === 0) {
