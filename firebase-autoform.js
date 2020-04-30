@@ -208,12 +208,12 @@ export class FirebaseAutoform extends LitElement {
         border-bottom: 1pxc solid #000;
       }
       button {
-        width: 20px;
-        height: 20px;
         margin-top: 30px;
         font-size: 12px;
         font-weight: bold;
-        padding: 0;
+        border-radius: 20px;
+        padding: 2px 11px;
+        height: auto;
       }
       .hidden {
         visibility:hidden;
@@ -291,6 +291,9 @@ export class FirebaseAutoform extends LitElement {
         border-radius:4em;
         z-index:1;
         opacity:0;
+      }
+      .invisible {
+        display: none;
       }
     `;
   }
@@ -545,6 +548,17 @@ export class FirebaseAutoform extends LitElement {
     }
   }
 
+  _addBtnEvents() {
+    const arrBtnAdd = this.shadowRoot.querySelectorAll('[id^="addNew"]');
+    arrBtnAdd.forEach((btn)=>{
+      btn.addEventListener('click', this._newMultiField.bind(this));
+    });
+    const arrBtnDel = this.shadowRoot.querySelectorAll('[id^="delLast"]');
+    arrBtnDel.forEach((btn)=>{
+      btn.addEventListener('click', this._delMultiField.bind(this));
+    });
+  }
+
   _autoSaveEvents() {
     for (let key of this._arrKeys) {
       let domElement = this.shadowRoot.querySelector(`#${key}`);
@@ -574,13 +588,12 @@ export class FirebaseAutoform extends LitElement {
           const myPromise2 = new Promise(resolve2 => {
             this._insertFields(this.data[0]).then(() => {
               this.shadowRoot.querySelector('#spinner').active = false;
-              if (this.elId) {
-                this._insertLegends();
-                this._insertTooltips();
-                this._makeCollapsibleGrps();
-                if (this.autoSave) {
-                  this._autoSaveEvents();
-                }
+              this._insertLegends();
+              this._insertTooltips();
+              this._makeCollapsibleGrps();
+              this._addBtnEvents();
+              if (this.autoSave) {
+                this._autoSaveEvents();
               }
               this.log('insertFields finish');
             });
@@ -837,45 +850,62 @@ export class FirebaseAutoform extends LitElement {
     });
   }
 
-  _createMultiField(container, labelId, typeobj) {
-    this._createFormGroup(labelId).then(c => {
-      this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
-
-      const id = labelId + '_' + this._counter[labelId];
-      const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
-      c.innerHTML += `
-        <paper-input type="${typeobj}" label="${labelId}" id="${id}" class="inlineblock" ${readOnly}>
-          <div class="slot" slot="prefix">[${typeobj}]</div>
-          <div class="slot" slot="suffix">${this._counter[labelId]}</div>
-        </paper-input>`;
-      const e = document.createElement('button');
-      e.id = 'btn_' + id;
-      e.innerHTML = '+';
-      e.setAttribute('typeobj', typeobj);
-      e.addEventListener('click', this._newMultiField.bind(this));
-      c.appendChild(e);
-      container.appendChild(c);
-    });
+  _addBtn(id, label, container, labelId, typeobj, className) {
+    const btn = document.createElement('button');
+    btn.setAttribute('id', id);
+    btn.setAttribute('data-group', labelId);
+    btn.textContent = label;
+    btn.setAttribute('typeobj', typeobj);
+    btn.setAttribute('class', className);
+    container.appendChild(btn);
   }
 
-  _newMultiField(ev, o) {
-    let labelId = ev.target.id.replace(/^btn_/, '');
-    labelId = labelId.replace(/_\d*$/, '');
-    const container = ev.target.parentNode.parentNode;
+  _createMultiField(container, labelId, typeobj) {
+    this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
+    const [labelShown, labelCleanId] = this._getLabels(labelId);
+    const id = labelId + '_' + this._counter[labelId];
+    const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
+    container.innerHTML += `
+      <paper-input type="${typeobj}" label="${labelCleanId}" id="${id}" class="inlineblock" ${readOnly}>
+        <div class="slot" slot="suffix">${this._counter[labelId]}</div>
+      </paper-input>`;
+    /* CREATE BUTTON */
+    this._addBtn('addNew' + labelShown, 'Add new "' + labelCleanId + '"', container, labelId, typeobj, '');
+    this._addBtn('delLast' + labelShown, 'Del last "' + labelCleanId + '"', container, labelId, typeobj, 'invisible');
+  }
+
+  _newMultiField(ev) {
+    const labelId = ev.target.dataset.group;
+    console.log(labelId, this._counter[labelId]);
     const typeobj = ev.target.getAttribute('typeobj');
+    const referenceNode = this.shadowRoot.querySelector('#' + labelId + '_' + this._counter[labelId]);
     this._counter[labelId]++;
-    this._createFormGroup(labelId).then(c => {
-      if (!this.shadowRoot.querySelector('#' + labelId)) {
-        const id = labelId + '_' + this._counter[labelId];
-        const readOnly = this.readonlyFields.includes(labelId) || this.readonly ? 'readonly' : '';
-        c.innerHTML += `
-          <paper-input type="${typeobj}" label="${labelId}" id="${id}" class="inlineblock" ${readOnly}>
-            <div class="slot" slot="prefix">[${typeobj}]</div>
-            <div class="slot" slot="suffix">${this._counter[labelId]}</div>
-          </paper-input>`;
+    const id = labelId + '_' + this._counter[labelId];
+    const [labelShown, labelCleanId] = this._getLabels(labelId);
+    if (this._counter[labelId] > 0) { this.shadowRoot.querySelector('[id^="delLast' + labelShown + '"]').classList.remove('invisible'); }
+    const newNode = document.createElement('paper-input');
+    newNode.setAttribute('type', typeobj);
+    newNode.setAttribute('label', labelCleanId);
+    newNode.setAttribute('id', id);
+    newNode.setAttribute('class', 'inlineblock');
+    if (this.readonlyFields.includes(labelId) || this.readonly) {
+      newNode.setAttribute('readOnly', 'true');
+    }
+    newNode.innerHTML += `<div class="slot" slot="suffix">${this._counter[labelId]}</div>`;
+    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+  }
+
+  _delMultiField(ev) {
+    const labelId = ev.target.dataset.group;
+    const [labelShown, labelCleanId] = this._getLabels(labelId);
+    if (this._counter[labelId] > 0) {
+      console.log(this.shadowRoot.querySelector('#' + labelId + '_' + this._counter[labelId]));
+      this.shadowRoot.querySelector('#' + labelId + '_' + this._counter[labelId]).remove();
+      this._counter[labelId]--;
+      if (this._counter[labelId] === 0) {
+        this.shadowRoot.querySelector('[id="delLast' + labelShown + '"]').classList.add('invisible');
       }
-      container.appendChild(c);
-    });
+    }
   }
 
   _createSelectMultiple(labelId, snap) {

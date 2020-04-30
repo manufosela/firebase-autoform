@@ -104,9 +104,15 @@
     </div>
 
     <h1>DEMO</h1>
+    <style>
+      firebase-autoform { --fields-max-width:500px; }
+    </style>
+    <firebase-loginbutton api-key="AIzaSyBrUB8xWbnV7N0ULnyk1-vKjpLx8pTFCsk" domain="kairos-knowledge-map"
+      messaging-sender-id="1095132222201" app-id="1:1095132222201:web:1bf2f4ddbf2488149c4828"></firebase-loginbutton>
+    <firebase-autoform id="fbaf2" path="/data/Personal" show-path="true" auto-save="true"></firebase-autoform>
+    <!--
     <firebase-loginbutton api-key="AIzaSyCVpVjyqS9qNcTsTDuQ8qBL1i4VPy5CdpY" domain="coleccion-peliculas"
       messaging-sender-id="852819704247" app-id="1:852819704247:web:9ac0a093401920ed"></firebase-loginbutton>
-
     <h3>Edit entry ID 5</h3>
     <style>
       #fbaf1 {
@@ -132,7 +138,7 @@
         C02-título=length(5-50)
       </validation-fields>
       
-    </firebase-autoform>
+    </firebase-autoform>-->
     <script>
       process = {}; process.env="DEV";
       document.addEventListener('firebase-autoform-ready', (ev) => {
