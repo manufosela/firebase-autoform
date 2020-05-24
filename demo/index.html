@@ -102,18 +102,33 @@
           </section>
         </pre>
     </div>
+  
+    <!--<style>
+      .layer { display:flex; }
+      .out1 { background: #43646D; width:250px; height:400px; border-radius: 0 0 200px 200px; }
+      .out2 { background: #43646D; width:250px; height:600px; border-radius: 0 0 200px 200px; }
+      .in1 { background: #FFF; width:200px; height:200px; border-radius:100px; position:relative; top:170px; left:25px; }
+      .in2 { background: #FFF; width:200px; height:200px; border-radius:100px; position:relative; top:370px; left:25px; }
+      .size1 { background: #43646D; width:90px; height:200px; border-radius: 0 0 90px 90px;}
+      .circle1 {background: #43646D; width:70px; height:70px; border-radius:70px; position:relative; top:200px; margin-left:10px;}
+    </style>
+    <div class="layer">
+      <div class="out1"><div class="in1"></div></div>
+      <div class="size1"><div class="circle1"></div></div>
+      <div class="out2"><div class="in2"></div></div>
+    </div>-->
 
     <h1>DEMO</h1>
     <style>
-      firebase-autoform { --fields-max-width:500px; }
+      firebase-autoform { --fields-max-width:600px; }
     </style>
-    <firebase-loginbutton api-key="AIzaSyBrUB8xWbnV7N0ULnyk1-vKjpLx8pTFCsk" domain="kairos-knowledge-map"
-      messaging-sender-id="1095132222201" app-id="1:1095132222201:web:1bf2f4ddbf2488149c4828"></firebase-loginbutton>
-    <firebase-autoform id="fbaf2" path="/data/Personal" show-path="true" auto-save="true"></firebase-autoform>
-    <!--
+
+
+    <!--******************* PELICULAS ********************-->
     <firebase-loginbutton api-key="AIzaSyCVpVjyqS9qNcTsTDuQ8qBL1i4VPy5CdpY" domain="coleccion-peliculas"
       messaging-sender-id="852819704247" app-id="1:852819704247:web:9ac0a093401920ed"></firebase-loginbutton>
-    <h3>Edit entry ID 5</h3>
+
+    <h3>Edit entry ID 6</h3>
     <style>
       #fbaf1 {
         --fields-max-width: 600px;
@@ -138,12 +153,13 @@
         C02-título=length(5-50)
       </validation-fields>
       
-    </firebase-autoform>-->
-    <script>
-      process = {}; process.env="DEV";
+    </firebase-autoform>
+    
+    <script type="module">
+      //process = {}; process.env="DEV";
       document.addEventListener('firebase-autoform-ready', (ev) => {
-        console.log(ev.detail.path);
-        console.log(ev.detail.id);
+        console.log('PATH: ', ev.detail.path);
+        if (ev.detail.id) { console.log('ID: ', ev.detail.id); }
         //console.log(ev.detail.obj);
       });
     </script>

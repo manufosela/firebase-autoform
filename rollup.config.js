@@ -1,16 +1,22 @@
 import resolve from 'rollup-plugin-node-resolve';
 import babel from 'rollup-plugin-babel';
+import { terser } from 'rollup-plugin-terser';
 
 export default {
   preserveSymlinks: true,
-	input: ['firebase-autoform.js'],
-	output: {
-		file: 'build/firebase-autoform.js',
+  input: [ 'firebase-autoform.js' ],
+  output: {
+    file: 'dist/firebase-autoform.js',
     format: 'es',
-		sourcemap: true
-	},
-	plugins: [
+    sourcemap: true
+  },
+  plugins: [
     resolve(),
-    babel()
+    babel(),
+    terser({
+      output: {
+        comments: false
+      }
+    })
   ]
 };
