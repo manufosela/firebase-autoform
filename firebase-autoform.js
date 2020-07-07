@@ -332,6 +332,8 @@ export class FirebaseAutoform extends LitElement {
     this._allIsReady = this._allIsReady.bind(this);
     this._userLogout_ = this._userLogout_.bind(this);
     this._userLogged_ = this._userLogged_.bind(this);
+    this._hideTooltip_ = this._hideTooltip_.bind(this);
+    this._showTooltip_ = this._showTooltip_.bind(this);
   }
 
   log(msg) {
@@ -499,7 +501,7 @@ export class FirebaseAutoform extends LitElement {
     this.tooltip.style.left = target.offsetLeft + 'px'; // 'calc(var(--fields-max-width) + 100px)';
   }
 
-  _showTooltip_ = (ev) => {
+  _showTooltip_(ev) {
     clearTimeout(this.tooltipTimeout);
     this.tooltip.style.opacity = 1;
     this.tooltip.classList.add('show');
@@ -518,7 +520,7 @@ export class FirebaseAutoform extends LitElement {
     }, 3000);
   }
 
-  _hideTooltip_ = (ev) => {
+  _hideTooltip_(ev) {
     this.tooltip.classList.remove('show');
     this.tooltip.style.left = '-1000px';
   }
