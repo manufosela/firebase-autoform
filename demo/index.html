@@ -124,11 +124,16 @@
     </style>
 
 
+
+
     <!--******************* PELICULAS ********************-->
     <firebase-loginbutton api-key="AIzaSyCVpVjyqS9qNcTsTDuQ8qBL1i4VPy5CdpY" domain="coleccion-peliculas"
       messaging-sender-id="852819704247" app-id="1:852819704247:web:9ac0a093401920ed"></firebase-loginbutton>
 
-    <h3>Edit entry ID 6</h3>
+      <!--<firebase-autoform id="fbaf1" path="/B01-categoría" show-path="true" auto-save="true">-->
+
+
+    <h3>Edit entry ID 5</h3>
     <style>
       #fbaf1 {
         --fields-max-width: 600px;
@@ -140,6 +145,7 @@
       <fileupload-fields>A02-carátula</fileupload-fields>
       <grp-names>A=Cartel,B=Categorización,C=Datos,D=Valoración</grp-names>
       <grp-collapsible>B,D</grp-collapsible>
+      <date-picker>A00-Fecha</date-picker>
 
       <description-field>A02-carátula=Sube la caratula de la pélicula en formato imagen</description-field>
       <description-field>D01-me_gustó|D02-valoración=Probando la misma descripción en dos campos diferentes</description-field>
@@ -154,7 +160,10 @@
       </validation-fields>
       
     </firebase-autoform>
-    
+
+
+
+
     <script type="module">
       //process = {}; process.env="DEV";
       document.addEventListener('firebase-autoform-ready', (ev) => {
@@ -162,6 +171,109 @@
         if (ev.detail.id) { console.log('ID: ', ev.detail.id); }
         //console.log(ev.detail.obj);
       });
+
+      // function thereIsPath(path) {
+
+      // }
+
+      // function _getGrpId(labelKey, level) {
+      //   let grpId;
+      //   const partsId = labelKey.split('-');
+      //   if (partsId.length > 1) {
+      //     if (labelKey.search(/_[0-9]*$/) !== -1) {
+      //       grpId = `GRP_${level}_${labelKey}`;
+      //     } else {
+      //       const grpName = partsId[0].replace(/[0-9]*/g, '');
+      //       grpId = `GRP_${level}_${grpName}`;
+      //     }
+      //   } else {
+      //     grpId = `GRP_${level}_${labelKey}`;
+      //   }
+      //   return grpId;
+      // }
+
+      // let groups = {};
+
+      // function _createFormGroup(labelKey, level, style) {
+      //   return new Promise((resolve) => {
+      //     const grpId = _getGrpId(labelKey, level);
+      //     console.log('Creando grupo ' + grpId);
+      //     //let formGroupLayer = this.shadowRoot.querySelector(`#${grpId}`);
+      //     if (!groups[grpId]) {
+      //       groups[grpId] = (labelKey !== 'loggedUser') ? document.createElement('fieldset') : document.createElement('div'); 
+      //       groups[grpId].id = grpId;
+      //       groups[grpId].className = (style === 'flex') ? 'formGroupFlex' : 'formGroup';
+      //     }
+      //     resolve(groups[grpId]);
+      //   });
+      // }
+
+      // function _createField(container, key) {
+      //   container.innerHTML += key;
+      // }
+
+      // function analyzeFields(schema, level, parentKey) {
+      //   parentKey = parentKey || document.body;
+      //   if (level <= 1) {
+      //     for (let key in schema) {
+      //       if (Array.isArray(schema[key])) {
+      //         console.log('\t'.repeat(level) + key, "Array");
+      //       } else if (typeof schema[key] === 'object') {
+      //         console.log('\t'.repeat(level) + key, typeof schema[key]);
+      //         analyzeFields(schema[key], level + 1, key);
+      //         _createFormGroup(key, level)
+      //           .then(c => {
+      //             _createField(c, key);
+      //             console.log('-> ' + c.id);
+      //             document.body.appendChild(c);
+      //           })
+      //           .catch((err)=> {
+      //             console.warn(err);
+      //           })
+      //       } else if (typeof schema[key] === 'string') {
+      //         console.log('\t'.repeat(level) + key, typeof schema[key]);
+      //         _createFormGroup(parentKey, level)
+      //           .then(c => {
+      //             console.log(c, key);
+      //             _createField(c, key);
+      //           })
+      //           .catch((err)=> {
+      //             console.warn(err);
+      //           })
+      //       } else {
+      //         console.warn(key, 'INVALID TYPE');
+      //       }
+      //     }
+      //   }
+      // }
+
+      // function analyze(schema) {
+      //   if (Array.isArray(schema)) {
+      //     throw('INVALID SCHEMA');
+      //   } else if (typeof schema === 'object') {
+      //     analyzeFields(schema, 0);
+      //   } else {
+      //     throw('INVALID SCHEMA');
+      //   }
+      // }
+
+      // import 'firebase/firebase-database';
+      // document.addEventListener('firebase-signin', (ev) => {
+      //   const path = '/data'
+      //   let starredStatusRef = firebase.database().ref(path);
+      //   starredStatusRef.once('value')
+      //     .then((snapshot) => {
+      //       const data = snapshot.val();
+      //       if (data[0]) {
+      //         analyze(data[0]);
+      //       } else {
+      //         throw('Not found element 0 (SCHEMA)');
+      //       }
+      //     })
+      //     .catch((err) => {
+      //       console.log(err);
+      //     });
+      //   });
     </script>
 
     <!--<h3>Add new entry</h3>
