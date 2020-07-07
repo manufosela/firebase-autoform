@@ -326,6 +326,12 @@ export class FirebaseAutoform extends LitElement {
     this.tooltip = document.createElement('div');
     this.tooltip.classList.add('tooltip');
     this.tooltip.classList.add('south');
+
+    this._setElId_ =  this._setElId_.bind(this);
+    this._setUploadedFileName_ = this._setUploadedFileName_.bind(this);
+    this._allIsReady = this._allIsReady.bind(this);
+    this._userLogout_ = this._userLogout_.bind(this);
+    this._userLogged_ = this._userLogged_.bind(this);
   }
 
   log(msg) {
@@ -334,11 +340,11 @@ export class FirebaseAutoform extends LitElement {
     }
   }
 
-  _setElId_ = (ev) => {
+  _setElId_(ev) {
     this.elId = ev.detail.id;
   }
 
-  _setUploadedFileName_ = (ev) => {
+  _setUploadedFileName_(ev) {
     const name = ev.detail.name;
     const id = ev.detail.id;
     if (this.id === id) {
@@ -444,7 +450,7 @@ export class FirebaseAutoform extends LitElement {
     }
   }
 
-  _allIsReady = () => {
+  _allIsReady() {
     document.dispatchEvent(new CustomEvent('firebase-autoform-ready', {
       detail: {
         path: this.path,
@@ -454,7 +460,7 @@ export class FirebaseAutoform extends LitElement {
     }));
   }
 
-  _userLogged_ = (obj) => {
+  _userLogged_(obj) {
     if (!this.user && obj.detail.user) {
       this.user = obj.detail.user.displayName;
       this.dataUser = obj.detail.user;
@@ -467,7 +473,7 @@ export class FirebaseAutoform extends LitElement {
     }
   }
 
-  _userLogout_ = () => {
+  _userLogout_() {
     this.dataUser = null;
     this.data = null;
   }
