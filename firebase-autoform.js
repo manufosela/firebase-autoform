@@ -1311,6 +1311,13 @@ export class FirebaseAutoform extends LitElement {
             this._showBubbleFieldMsg(bubble, el);
           } else {
             this._showMsgPopup('Datos guardados correctamente', callbackFn);
+            document.dispatchEvent(new CustomEvent('firebase-autoform-data-saved', {
+              detail: {
+                path: this.path,
+                id: this.elId,
+                data: data
+              }
+            }));
           }
         }
       });
