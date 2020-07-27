@@ -388,9 +388,7 @@ export class FirebaseAutoform extends LitElement {
     super.connectedCallback();
     document.addEventListener('firebase-signin', this._userLogged_);
     document.addEventListener('firebase-signout', this._userLogout_);
-    if (this.elId) {
-      document.addEventListener('firebase-autolist-selectid', this._setElId_);
-    }
+    document.addEventListener('firebase-autolist-selectid', this._setElId_);
     const firebaseAreYouLoggedEvent = new Event('firebase-are-you-logged'); // (2)
     document.dispatchEvent(firebaseAreYouLoggedEvent);
 
