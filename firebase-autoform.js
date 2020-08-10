@@ -122,6 +122,12 @@ export class FirebaseAutoform extends LitElement {
         font-size:100%;
       }
 
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
       .error_msg { font-weight:bold; color:var(--error-msg-color, blue); padding:15px; }
       .path { color:var(--path-title-color, #FF7800); }
       #formfieldlayer { margin-bottom:30px; }
@@ -144,7 +150,8 @@ export class FirebaseAutoform extends LitElement {
       section {
         padding:20px;
         margin:0 20px 0 20px;
-        width: var(--fields-max-width, 300px);
+        width: 100%;
+        max-width: var(--fields-max-width, 300px);
       }
       section.child {
         padding-top:0;
@@ -155,7 +162,8 @@ export class FirebaseAutoform extends LitElement {
         cursor: pointer;
       }
       paper-input, paper-dropdown-menu, high-select, select, paper-textarea {
-        width: var(--fields-max-width, 300px);
+        width: 100%;
+        max-width: var(--fields-max-width, 300px);
         --secondary-text-color: var(--label-color, #F30);
       }
       paper-input:host(label) {
@@ -213,7 +221,8 @@ export class FirebaseAutoform extends LitElement {
         border-radius: 20px;
         padding: 14px;
         margin: 10px;
-        width: var(--fields-max-width, 300px);
+        width: 100%;
+        max-width: var(--fields-max-width, 300px);
       }
       fieldset fieldset {
         border:0;
@@ -902,28 +911,31 @@ export class FirebaseAutoform extends LitElement {
   _getFieldForm(propField, labelKey) {
     let myPromise;
     const [labelShown, labelCleanId] = this._getLabels(labelKey);
-    if (typeof propField === 'object' && this._fieldsInRootPath.includes(labelShown)) {
-      console.log('** multifield multiple ' + labelKey);
-      myPromise = this._createFormGroup(labelKey).then((fieldForm) => {
-        return this._createListMult(labelKey, fieldForm);
-      });
-    } else if (this._fieldsInRootPath.includes(labelShown)) {
-      /* SI EL VALOR CON KEY 0 ES UN STRING ES UN SELECT */
-      /* SI EL VALOR CON KEY 0 ES UN OBJETO ES OTRO FIREBASE_AUTOFORM */
-      if (typeof this._valuesFieldsInRootPath[labelShown][0] === 'object') {
-        /* FIREBASE ELEMENTS */
-        console.log('** firebase-autoform ' + labelKey);
-        this._firebaseAutoformEls.push(labelKey);
+    if (this._fieldsInRootPath.includes(labelShown)) {
+      if (typeof propField === 'object' && typeof propField[0] === 'string') {
+        //this.data[0][labelKey][0]
+        console.log('** multifield multiple ' + labelKey);
         myPromise = this._createFormGroup(labelKey).then((fieldForm) => {
-          return this._createFirebaseAutoformChild(labelKey, fieldForm);
+          return this._createListMult(labelKey, fieldForm);
         });
       } else {
-        /* SELECT ELEMENTS */
-        console.log('** select ' + labelKey);
-        myPromise = this._createFormGroup(labelKey).then((fieldForm) => {
-          return this._createHighList(labelKey, fieldForm);
-        });
-        this.log('list ' + labelKey);
+        /* SI EL VALOR CON KEY 0 ES UN STRING ES UN SELECT */
+        /* SI EL VALOR CON KEY 0 ES UN OBJETO ES OTRO FIREBASE_AUTOFORM */
+        if (typeof this._valuesFieldsInRootPath[labelShown][0] === 'object') {
+          /* FIREBASE ELEMENTS */
+          console.log('** firebase-autoform ' + labelKey);
+          this._firebaseAutoformEls.push(labelKey);
+          myPromise = this._createFormGroup(labelKey).then((fieldForm) => {
+            return this._createFirebaseAutoformChild(labelKey, fieldForm);
+          });
+        } else {
+          /* SELECT ELEMENTS */
+          console.log('** select ' + labelKey);
+          myPromise = this._createFormGroup(labelKey).then((fieldForm) => {
+            return this._createHighList(labelKey, fieldForm);
+          });
+          this.log('list ' + labelKey);
+        }
       }
     } else if (typeof propField === 'object')  {
       /* INPUT TEXT MULTIPLES ELEMENTS */
@@ -968,7 +980,7 @@ export class FirebaseAutoform extends LitElement {
 
       //let formGroupLayer = this.shadowRoot.querySelector(`#${grpId}`);
       if (!this.groups[grpId]) {
-        this.groups[grpId] = (labelKey !== 'loggedUser') ? document.createElement('fieldset') : document.createElement('div'); 
+        this.groups[grpId] = (labelKey !== 'loggedUser') ? document.createElement('fieldset') : document.createElement('div');
         this.groups[grpId].id = grpId;
         this.groups[grpId].className = (style === 'flex') ? 'formGroupFlex' : 'formGroup';
       }
@@ -1164,7 +1176,7 @@ export class FirebaseAutoform extends LitElement {
 
   _checkValueSnap(ref, valueSnap, labelShown) {
     let id = 0;  /* NO USO EL 0 PORQUE EL 0 SE USA POR DEFECTO PARA EL SCHEMA */
-    if (valueSnap === null) {
+    if (valueSnap === null || valueSnap === '') {
       valueSnap = Object.keys(this._valuesFieldsInRootPath[labelShown][0]).reduce((result, item) => {
         result[item] = ''; return result;
       }, {});
@@ -1186,15 +1198,13 @@ export class FirebaseAutoform extends LitElement {
       const path = this.path + '/' + this.elId + '/' + labelId;
       console.log(path);
       const ref = firebase.database().ref(path);
-      const firebaseAutoformLabel = document.createElement('label');
       const firebaseAutoform = document.createElement('firebase-autoform');
       firebaseAutoform.id = labelId;
       ref.once('value')
         .then((snap) => {
           let valueSnap = snap.val();
           let id = this._checkValueSnap(ref, valueSnap, labelShown);
-          firebaseAutoformLabel.innerText = labelCleanId;
-
+          firebaseAutoform.innerHTML = `<grp-names>A=${labelCleanId}</grp-names>`;
           firebaseAutoform.setAttribute('path', path);
           firebaseAutoform.setAttribute('el-id', id);
           firebaseAutoform.setAttribute('is-child', true);
@@ -1203,7 +1213,6 @@ export class FirebaseAutoform extends LitElement {
           firebaseAutoform.setAttribute('hide-id', true || false);
 
           if (!this.shadowRoot.querySelector('#' + labelId)) {
-            formGroup.appendChild(firebaseAutoformLabel);
             formGroup.appendChild(firebaseAutoform);
           }
           resolve(formGroup);
