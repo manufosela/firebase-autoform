@@ -1131,6 +1131,7 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _createSelectMultiple(labelId, snap) {
+    const elId = this.elId || 0;
     const select = document.createElement('select');
     select.id = labelId;
     select.setAttribute('multiple', 'true');
@@ -1139,8 +1140,8 @@ export class FirebaseAutoform extends LitElement {
       const itemVal = item.val();
       option.value = itemVal;
       option.innerText = itemVal;
-      if (this.data[this.elId][labelId]) {
-        if (this.data[this.elId][labelId].includes(itemVal)) {
+      if (this.data[elId][labelId]) {
+        if (this.data[elId][labelId].includes(itemVal)) {
           option.setAttribute('selected', 'true');
         }
       }
@@ -1194,16 +1195,17 @@ export class FirebaseAutoform extends LitElement {
 
   _createFirebaseAutoformChild(labelId, formGroup) {
     return new Promise(resolve => {
+      const elId = this.elId || this._getNextId();
       const [labelShown, labelCleanId] = this._getLabels(labelId);
-      const path = this.path + '/' + this.elId + '/' + labelId;
+      const path = this.path + '/' + elId + '/' + labelId;
       console.log(path);
       const ref = firebase.database().ref(path);
       const firebaseAutoform = document.createElement('firebase-autoform');
       firebaseAutoform.id = labelId;
       ref.once('value')
         .then((snap) => {
-          let valueSnap = snap.val();
-          let id = this._checkValueSnap(ref, valueSnap, labelShown);
+          const valueSnap = snap.val();
+          const id = this._checkValueSnap(ref, valueSnap, labelShown);
           firebaseAutoform.innerHTML = `<grp-names>A=${labelCleanId}</grp-names>`;
           firebaseAutoform.setAttribute('path', path);
           firebaseAutoform.setAttribute('el-id', id);
@@ -1398,9 +1400,15 @@ export class FirebaseAutoform extends LitElement {
     }, 40);
   }
 
+  _getNextId() {
+    const nextId = parseInt(Object.keys(this.data).pop()) + 1;
+    return nextId;
+  }
+
   _saveFirebase(data) {
     if (Object.keys(data).length !== 0) {
-      let nextId = this.elId || parseInt(Object.keys(this.data).pop()) + 1;
+      this.elId = this.elId || this._getNextId();
+      let nextId = this.elId;
       let callbackFn = (this.elId) ? null : this._cleanFields.bind(this);
       data.__edit_user = this.user;
       data.__created_at = firebase.database.ServerValue.TIMESTAMP;
