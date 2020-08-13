@@ -349,6 +349,10 @@ export class FirebaseAutoform extends LitElement {
     this.fieldChanged = '';
 
     this.groups = {};
+    this.MODELFIELDS = [];
+    this.TYPEMODELFIELDS = {};
+    this.SCHEMAFIELDS = [];
+    this.TYPESCHEMAFIELDS = {};
 
     this.tooltip = document.createElement('div');
     this.tooltip.classList.add('tooltip');
@@ -487,6 +491,7 @@ export class FirebaseAutoform extends LitElement {
     }));
   }
 
+  /* INIT METHOD */
   _userLogged_(obj) {
     if (!this.user && obj.detail.user) {
       this.user = obj.detail.user.displayName;
@@ -715,7 +720,64 @@ export class FirebaseAutoform extends LitElement {
     return myPromise;
   }
 
+  _getArrayOrObject(val) {
+    let typeVal = 'array';
+    if (typeof val[0] === 'object') {
+      typeVal = 'object';
+    }
+    return typeVal;
+  }
+
+  _getModel() {
+    return new Promise((resolve, reject) => {
+      const starredStatusRef = firebase.database().ref('/model');
+      starredStatusRef.once('value')
+        .then((snapshot) => {
+          snapshot.forEach((item) => {
+            const itemVal = item.val();
+            const itemKey = item.key;
+            const typeVal = this._getArrayOrObject(itemVal);
+            this.log(itemKey, typeVal);
+            this.MODELFIELDS.push(itemKey);
+            this.TYPEMODELFIELDS[itemKey] = typeVal;
+          });
+          resolve();
+        });
+    });
+  }
+
+  _getFieldsSchema() {
+    const schema = this.data[0];
+    for (let key in schema) {
+      if (Object.prototype.hasOwnProperty.call(schema, key)) {
+        this.log('field ', key, typeof(schema[key]));
+        this.SCHEMAFIELDS.push(key);
+        this.TYPESCHEMAFIELDS[key] = typeof(schema[key]);
+      }
+    }
+  }
+
   _analizeFields() {
+    this.shadowRoot.querySelector('#spinner').active = true;
+    this.shadowRoot.querySelector('#formfieldlayer').textContent = '';
+    this.groups = {};
+    return new Promise((resolve, reject) => {
+      if (this.data) {
+        if (this.data['0']) {
+          /* OBTENEMOS MODELO y CAMPOS DEL ESQUEMA */
+          this._getModel();
+          this._getFieldsSchema();
+          resolve();
+        } else {
+          reject('No data[0] found');
+        }
+      } else {
+        reject(`No data. Path is correct? (${this.path})`);
+      }
+    });
+  }
+
+  _analizeFieldsOLD() {
     this.shadowRoot.querySelector('#spinner').active = true;
     this.shadowRoot.querySelector('#formfieldlayer').textContent = '';
     this.groups = {};
