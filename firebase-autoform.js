@@ -353,6 +353,20 @@ export class FirebaseAutoform extends LitElement {
     this.TYPEMODELFIELDS = {};
     this.SCHEMAFIELDS = [];
     this.TYPESCHEMAFIELDS = {};
+    this.HTMLFields = {};
+    this.relationModelField = {
+      'array-string': 'SELECT',
+      'array-object': 'MULTI-SELECT',
+      'object-string': 'FIREBASE-AUTOFORM',
+      'object-object': 'FIREBASE-AUTOFORM MULTIPLE'
+    };
+
+    this.textareaFields = [];
+    this.readonlyFields = [];
+    this.datepickerFields = [];
+    this.fileuploadFields = [];
+
+    // por cual se reemplaza esta? this._valuesFieldsInRootPath =
 
     this.tooltip = document.createElement('div');
     this.tooltip.classList.add('tooltip');
@@ -605,11 +619,11 @@ export class FirebaseAutoform extends LitElement {
   _addBtnEvents() {
     const arrBtnAdd = this.shadowRoot.querySelectorAll('[id^="addNew"]');
     arrBtnAdd.forEach((btn)=>{
-      btn.addEventListener('click', this._newMultiField.bind(this));
+      btn.addEventListener('click', this._newInputToInputMultiple.bind(this));
     });
     const arrBtnDel = this.shadowRoot.querySelectorAll('[id^="delLast"]');
     arrBtnDel.forEach((btn)=>{
-      btn.addEventListener('click', this._delMultiField.bind(this));
+      btn.addEventListener('click', this._deleteInputFromInputMultiple.bind(this));
     });
   }
 
@@ -728,7 +742,7 @@ export class FirebaseAutoform extends LitElement {
     return typeVal;
   }
 
-  _getModel() {
+  _getModels() {
     return new Promise((resolve, reject) => {
       const starredStatusRef = firebase.database().ref('/model');
       starredStatusRef.once('value')
@@ -747,26 +761,29 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _getFieldsSchema() {
-    const schema = this.data[0];
-    for (let key in schema) {
-      if (Object.prototype.hasOwnProperty.call(schema, key)) {
-        this.log('field ', key, typeof(schema[key]));
-        this.SCHEMAFIELDS.push(key);
-        this.TYPESCHEMAFIELDS[key] = typeof(schema[key]);
+    return new Promise((resolve, reject) => {
+      const schema = this.data[0];
+      for (let key in schema) {
+        if (Object.prototype.hasOwnProperty.call(schema, key)) {
+          this.log('field ', key, typeof(schema[key]));
+          this.SCHEMAFIELDS.push(key);
+          this.TYPESCHEMAFIELDS[key] = typeof(schema[key]);
+        }
       }
-    }
+      resolve();
+    });
   }
 
   _analizeFields() {
     this.shadowRoot.querySelector('#spinner').active = true;
     this.shadowRoot.querySelector('#formfieldlayer').textContent = '';
     this.groups = {};
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       if (this.data) {
         if (this.data['0']) {
           /* OBTENEMOS MODELO y CAMPOS DEL ESQUEMA */
-          this._getModel();
-          this._getFieldsSchema();
+          await this._getModels();
+          await this._getFieldsSchema();
           resolve();
         } else {
           reject('No data[0] found');
@@ -970,54 +987,61 @@ export class FirebaseAutoform extends LitElement {
     });
   }
 
+  _getSelectFieldType(labelKey) {
+    /*
+    Si no está en la lista de modelos es un campo comun tipo String:		INPUT, TEXTAREA, FECHA, CHECKBOX, FIREBASE-UPLOADFILE
+    Si no está en la lista de modelos es un campo comun tipo Objecto:		MUltiple: INPUT, TEXTAREA, FECHA, CHECKBOX, FIREBASE-UPLOADFILE
+
+    INPUT si es de tipo Boolean es CHECKBOX.
+
+    MODELO CAMPO
+    Array	 String	  SELECT
+    Array	 Array	 	  MULTI-SELECT
+    Objeto String		FIREBASE-AUTOFORM
+    Objeto Array	 		FIREBASE-AUTOFORM MULTIPLE
+    */
+    const [labelShown, labelCleanId] = this._getLabels(labelKey);
+    const isModel = this.MODELFIELDS.includes(labelShown);
+    const typeModel = this.TYPEMODELFIELDS[labelShown];
+    const typeField = this.TYPESCHEMAFIELDS[labelKey];
+
+
+    if (isModel) {
+      this.HTMLFields[labelKey] = this.relationModelField[`${typeModel}-${typeField}`];
+    } else {
+      const multi = (typeField === 'object') ? ' MULTIPLE' : '';
+      this.HTMLFields[labelKey] = (this.textareaFields.includes(labelKey) ? 'TEXTAREA' :
+                                 this.datepickerFields.includes(labelKey) ? 'DATE-PICKER' :
+                                 this.fileuploadFields.includes(labelKey) ? 'FILE-UPLOAD' : 
+                                 this.TYPESCHEMAFIELDS[labelKey] === 'boolean' ? 'CHECKBOX' :
+                                 'INPUT') + multi;
+    }
+    console.log(`--> ${labelKey} => ${this.HTMLFields[labelKey]}`);
+  }
+
   _getFieldForm(propField, labelKey) {
     let myPromise;
-    const [labelShown, labelCleanId] = this._getLabels(labelKey);
-    if (this._fieldsInRootPath.includes(labelShown)) {
-      if (typeof propField === 'object' && typeof propField[0] === 'string') {
-        //this.data[0][labelKey][0]
-        console.log('** multifield multiple ' + labelKey);
-        myPromise = this._createFormGroup(labelKey).then((fieldForm) => {
-          return this._createListMult(labelKey, fieldForm);
-        });
-      } else {
-        /* SI EL VALOR CON KEY 0 ES UN STRING ES UN SELECT */
-        /* SI EL VALOR CON KEY 0 ES UN OBJETO ES OTRO FIREBASE_AUTOFORM */
-        if (typeof this._valuesFieldsInRootPath[labelShown][0] === 'object') {
-          /* FIREBASE ELEMENTS */
-          console.log('** firebase-autoform ' + labelKey);
-          this._firebaseAutoformEls.push(labelKey);
-          myPromise = this._createFormGroup(labelKey).then((fieldForm) => {
-            return this._createFirebaseAutoformChild(labelKey, fieldForm);
-          });
-        } else {
-          /* SELECT ELEMENTS */
-          console.log('** select ' + labelKey);
-          myPromise = this._createFormGroup(labelKey).then((fieldForm) => {
-            return this._createHighList(labelKey, fieldForm);
-          });
-          this.log('list ' + labelKey);
-        }
+    const regExpCommonField = new RegExp(/INPUT|TEXTAREA|DATE-PICKER|FILE-UPLOAD/);
+    this._getSelectFieldType(labelKey);
+
+    return this._createFormGroup(labelKey).then((fieldForm) => {
+      if (this.HTMLFields[labelKey] === 'MULTI-SELECT') {
+        myPromise = this._createBlockSelectMultiple(labelKey, fieldForm);
+      } if (this.HTMLFields[labelKey] === 'FIREBASE-AUTOFORM') {
+        myPromise = this._createFirebaseAutoformChild(labelKey, fieldForm);
+      } if (this.HTMLFields[labelKey] === 'FIREBASE-AUTOFORM MULTIPLE') {
+        myPromise = this._createFirebaseAutoformChildMultiple(labelKey, fieldForm);
+      } if (this.HTMLFields[labelKey] === 'SELECT') {
+        myPromise = this._createHighList(labelKey, fieldForm);
+      } if (this.HTMLFields[labelKey] === 'INPUT MULTIPLE')  {
+        myPromise = this._createBlockInputMultiple(labelKey, typeof propField['0']);
+      } if (this.HTMLFields[labelKey] === 'CHECKBOX')  {
+        myPromise = this._createCheckbox(labelKey, fieldForm);
+      } if (regExpCommonField.exec(this.HTMLFields[labelKey]))  {
+        myPromise = this._createCommonHTMLField(labelKey, typeof propField, fieldForm);
       }
-    } else if (typeof propField === 'object')  {
-      /* INPUT TEXT MULTIPLES ELEMENTS */
-      console.log('** createMF ' + labelKey);
-      console.log(labelKey, typeof propField, propField);
-      myPromise = this._createMF(labelKey, typeof propField['0'], propField);
-    } else if (propField === true || propField === false) {
-      /* CHECKBOX ELEMENTS */
-      console.log('** checkbox ' + labelKey);
-      myPromise = this._createFormGroup(labelKey).then(fieldForm => {
-        return this._createCheckbox(labelKey, fieldForm);
-      });
-    } else if (typeof propField === 'string' || typeof propField === 'number') {
-      /* INPUT TEXT, TEXTAREA OR FIREBASE-UPLOAD ELEMENTS */
-      console.log('** input text ' + labelKey);
-      myPromise = this._createFormGroup(labelKey).then(fieldForm => {
-        return this._createField(labelKey, typeof propField, fieldForm);
-      });
-    }
-    return myPromise;
+      return myPromise;
+    });
   }
 
   _getGrpId(labelKey) {
@@ -1087,7 +1111,7 @@ export class FirebaseAutoform extends LitElement {
     return HTMLTag;
   }
 
-  _createField(labelId, typeobj, fieldForm) {
+  _createCommonHTMLField(labelId, typeobj, fieldForm) {
     return new Promise(resolve => {
       if (!this.shadowRoot.querySelector('#' + labelId)) {
         fieldForm.innerHTML += this._getHTMLTag(labelId, typeobj);
@@ -1111,29 +1135,13 @@ export class FirebaseAutoform extends LitElement {
     });
   }
 
-  _createMF(labelId, typeobj, propField) {
-    if (typeobj !== 'undefined' && typeobj !== 'object') {
-      console.log(typeobj);
-      console.log('implementar grupo multiple', labelId);
-      return new Promise(resolve => {
-        this._createFormGroup(labelId).then(c => {
-          this._createMultiField(c, labelId, typeobj);
-          resolve(c);
-        });
+  _createBlockInputMultiple(labelId, typeobj) {
+    return new Promise(resolve => {
+      this._createFormGroup(labelId).then(c => {
+        this._createInputMultiple(c, labelId, typeobj);
+        resolve(c);
       });
-    } else {
-      console.log('implementar grupo complejo ', labelId);
-      return new Promise(resolve => {
-        this._createFormGroup(labelId).then(c => {
-          const fbaf = document.createElement('firebase-autoform');
-          fbaf.id = labelId;
-          fbaf.setAttribute('path', this.path + '/' + labelId);
-          console.log('path ', fbaf.path);
-          c.appendChild(fbaf);
-          resolve(c);
-        });
-      });
-    }
+    });
   }
 
   _addBtn(id, label, container, labelId, typeobj, className) {
@@ -1146,7 +1154,7 @@ export class FirebaseAutoform extends LitElement {
     container.appendChild(btn);
   }
 
-  _createMultiField(container, labelId, typeobj) {
+  _createInputMultiple(container, labelId, typeobj) {
     this._counter[labelId] = (!this._counter[labelId]) ? 0 : this._counter[labelId]++;
     const [labelShown, labelCleanId] = this._getLabels(labelId);
     const id = labelId + '_' + this._counter[labelId];
@@ -1155,12 +1163,12 @@ export class FirebaseAutoform extends LitElement {
       <paper-input type="${typeobj}" label="${labelCleanId}" id="${id}" class="inlineblock" ${readOnly}>
         <div class="slot" slot="suffix">${this._counter[labelId]}</div>
       </paper-input>`;
-    /* CREATE BUTTON */
+    /* CREATE BUTTONS */
     this._addBtn('addNew' + labelShown, 'Add new "' + labelCleanId + '"', container, labelId, typeobj, '');
     this._addBtn('delLast' + labelShown, 'Del last "' + labelCleanId + '"', container, labelId, typeobj, 'invisible');
   }
 
-  _newMultiField(ev) {
+  _newInputToInputMultiple(ev) {
     const labelId = ev.target.dataset.group;
     const typeobj = ev.target.getAttribute('typeobj');
     const referenceNode = this.shadowRoot.querySelector('#' + labelId + '_' + this._counter[labelId]);
@@ -1180,7 +1188,7 @@ export class FirebaseAutoform extends LitElement {
     referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
   }
 
-  _delMultiField(ev) {
+  _deleteInputFromInputMultiple(ev) {
     const labelId = ev.target.dataset.group;
     const [labelShown, labelCleanId] = this._getLabels(labelId);
     if (this._counter[labelId] > 0) {
@@ -1216,10 +1224,12 @@ export class FirebaseAutoform extends LitElement {
 
   }
 
-  _createListMult(labelId, formGroup) {
+  _createBlockSelectMultiple(labelId, formGroup) {
     return new Promise(resolve => {
       const [labelShown, labelCleanId] = this._getLabels(labelId);
-      const ref = firebase.database().ref('/' + labelShown);
+      const ref = firebase.database().ref('/model/' + labelShown);
+      /* TODO: Si al analizar la bbdd recuperamos los datos no hay que volver a traerselos de firebase */
+      console.warn('TODO:_createBlockSelectMultiple. Get /model/' + labelShown + ' from data?');
       ref.once('value')
         .then((snap) => {
           if (!this.shadowRoot.querySelector('#' + labelId)) {
@@ -1256,6 +1266,7 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _createFirebaseAutoformChild(labelId, formGroup) {
+    this._firebaseAutoformEls.push(labelKey);
     return new Promise(resolve => {
       const elId = this.elId || this._getNextId();
       const [labelShown, labelCleanId] = this._getLabels(labelId);
@@ -1284,10 +1295,16 @@ export class FirebaseAutoform extends LitElement {
     });
   }
 
+  _createFirebaseAutoformChildMultiple(labelKey, formGroup) {
+    //this._firebaseAutoformEls.push(labelKey);
+    return new Promise((resolve) => { resolve() });
+  }
+
   _createHighList(labelId, formGroup) {
     return new Promise(resolve => {
       const [labelShown, labelCleanId] = this._getLabels(labelId);
-      const ref = firebase.database().ref('/' + labelShown);
+      /* TODO: Si al analizar la bbdd recuperamos los datos no hay que volver a traerselos de firebase */
+      const ref = firebase.database().ref('/model/' + labelShown);
       const highSelectLabel = document.createElement('label');
       const highSelect = document.createElement('high-select');
       highSelect.id = labelId;
@@ -1324,11 +1341,6 @@ export class FirebaseAutoform extends LitElement {
           resolve(formGroup);
         });
     });
-  }
-
-  _createListMS(labelId, formGroup) {
-    // TODO
-    // <paper-dropdown-menu-multi label="Names" selections="[&quot;Sarah&quot;,&quot;Tessa&quot;,&quot;Hitaru&quot;]" maxdisplay="3"></paper-dropdown-menu-multi>
   }
 
   _showError(msg) {
@@ -1396,10 +1408,10 @@ export class FirebaseAutoform extends LitElement {
   }
 
   saveComplex() {
-    const data = this._tourElements();
+    const data = this._getCurrentDataFromElements();
     this._saveFirebase(data);
   }
-  _getVal(el) {
+  _getElementValue(el) {
     let noPaperTags = ['FIREBASE-UPLOADFILE', 'HIGH-SELECT', 'SELECT', 'INPUT'];
     let val = (noPaperTags.includes(el.tagName)) ? el.value : (el.$.input) ? el.$.input.value : el.value;
     if (el.tagName === 'PAPER-CHECKBOX') {
@@ -1413,12 +1425,12 @@ export class FirebaseAutoform extends LitElement {
 
   _getAllDataGrp(data, key) {
     const cleanKey = key.split('-')[0];
-    const els = this.shadowRoot.querySelectorAll('[id^=' + cleanKey + ']');
+    const els = this.shadowRoot.querySelectorAll(`[id^=${cleanKey}]`);
     data[key] = [];
     for (const [elIndex, element] of els.entries()) {
       const val = element.$ ? (element.$.input) ? element.$.input.value : element.value : element.value;
       data[key][elIndex] = (val) ? val : '';
-      this.log('\t' + elIndex + ' = ' + val);
+      this.log(`	${elIndex} = ${val}`);
     }
     if (data[key].length === 0) {
       delete data[key];
@@ -1426,15 +1438,15 @@ export class FirebaseAutoform extends LitElement {
     return data;
   }
 
-  _tourElements() {
+  _getCurrentDataFromElements() {
     let data = {};
     for (const key of this._arrKeys) {
-      let el = this.shadowRoot.querySelector('#' + key);
+      let el = this.shadowRoot.querySelector(`#${key}`);
       if (this._firebaseAutoformEls.includes(key)) {
-        data[key] = this.shadowRoot.querySelector('#' + key).data;
+        data[key] = this.shadowRoot.querySelector(`#${key}`).data;
       } else {
         if (el) {
-          const val = this._getVal(el);
+          const val = this._getElementValue(el);
           data[key] = (val) ? val : '';
         } else {
           data = this._getAllDataGrp(data, key);
@@ -1448,8 +1460,8 @@ export class FirebaseAutoform extends LitElement {
     const offset = 40;
     const bubbleTop = el.offsetTop + 10;
     bubble.style.opacity = 1;
-    bubble.style.top = bubbleTop + 'px';
-    bubble.style.left = (el.offsetLeft + 150) + 'px';
+    bubble.style.top = `${bubbleTop}px`;
+    bubble.style.left = `${el.offsetLeft + 150}px`;
     let opacity = 1;
     let idInterval = setInterval(() => {
       const val = parseInt(bubble.style.top) - 2;
@@ -1458,7 +1470,7 @@ export class FirebaseAutoform extends LitElement {
       }
       opacity -= 0.05;
       bubble.style.opacity = opacity;
-      bubble.style.top = val + 'px';
+      bubble.style.top = `${val}px`;
     }, 40);
   }
 
@@ -1489,7 +1501,7 @@ export class FirebaseAutoform extends LitElement {
         } else {
           if (!this._firebaseAutoformEls.includes(this.fieldChanged)) {
             if (this.fieldChanged !== '') {
-              const el = this.shadowRoot.querySelector('#' + this.fieldChanged);
+              const el = this.shadowRoot.querySelector(`#${this.fieldChanged}`);
               this.fieldChanged = '';
               const bubble = this.shadowRoot.querySelector('#bubbleSaved');
               this._showBubbleFieldMsg(bubble, el);
@@ -1506,7 +1518,7 @@ export class FirebaseAutoform extends LitElement {
               }));
               if (this.isChild) {
                 this._firebaseAutoformEls.forEach((el) => {
-                  this.shadowRoot.querySelector('#' + el).save();
+                  this.shadowRoot.querySelector(`#${el}`).save();
                 });
               }
             }
