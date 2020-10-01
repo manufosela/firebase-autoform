@@ -124,28 +124,63 @@
     </style>
 
 
+    <!--********************SEGUIMIENTO MENSUAL***********************-->
+    <!--<firebase-loginbutton 
+        api-key="AIzaSyDaAaGDF5ESVSOexYdQEUFoW3YthqDeK2c"
+        domain="seguimiento-mensual"
+        messaging-sender-id="1058838981723"
+        app-id="1:1058838981723:web:e2e69043f945a99bc0e37e" 
+        show-email
+        show-photo>
+    </firebase-loginbutton>
+    <firebase-autoform id="data" path="/data/manu_fosela/2020" el-id="01-Enero" logged-user="Seguimiento de" auto-save="true">
+      <textarea-fields>B02-descripción,C02-descripción,D02-descripción,E02-descripción</textarea-fields>
+      <fileupload-fields>B03-evidencia,C03-evidencia,D03-evidencia,E03-evidencia</fileupload-fields>
+      
+      <grp-names>A=Capacidad,B=Evidencia 1,C=Evidencia 2,D=Evidencia 3,E=Evidencia 4</grp-names>
+      <grp-collapsible>B,C,D,E</grp-collapsible>
+      
+      <description-field>B02-descripción|C02-descripción|D02-descripción|E02-descripción=Hay que rellenar de manera objetiva las descripciones, hablando de tareas concretas, tecnologias, metodologías, herramientas... Es necesario ser objetivo y conciso en las descripciones. Las descripciones deben tener al menos 2 lineas. Utilizar eufemismos como se indican en el apartado CONSEJOS. Se puede poner alguna url a parte de la del apartado URL</description-field>
+      <description-field>B03-evidencia|C03-evidencia|D03-evidencia|E03-evidencia=Hay que subir/adjuntar un archivo. Para las imagenes subir pantallazos completos, no trocitos de imagen. En caso de necesitar subir mas de un fichero, comprimir con ZIP y subirlo</description-field>
+      <description-field>B04-url|C04-url|D04-url|E04-url=Url de la evidencia principal. Puede ser un repositorio, Jira, la app...</description-field>
+      <description-field>B01-proyecto|C01-proyecto|D01-proyecto|E01-proyecto=Busca y selecciona el proyecto para el que trabajaste</description-field>
+      
+      <mandatory-fields>
+        B01-proyecto&B02-descripción&B03-evidencia,C01-proyecto&C02-descripción&C03-evidencia,D01-proyecto&D02-descripción&D03-evidencia,E01-proyecto&E02-descripción&E03-evidencia
+      </mandatory-fields>
+      
+    </firebase-autoform>-->
+
+    <!--************** KAIROS KNOWLEDGE ************** -->
+    <firebase-loginbutton api-key="AIzaSyBrUB8xWbnV7N0ULnyk1-vKjpLx8pTFCsk" domain="kairos-knowledge-map"
+      messaging-sender-id="1095132222201" app-id="1:1095132222201:web:1bf2f4ddbf2488149c4828"></firebase-loginbutton>
+    <!--<firebase-autoform id="fbaf2" path="/kairoseros" show-path="true" auto-save="true" readonly="true"></firebase-autoform>-->
+    <firebase-autoform id="fbaf2" path="/data" show-path="true" auto-save="true">
+      <grp-names>A=Datos Empleado,B=Experiencias Profesionales,C=Educación,D=Personal,E=Privado</grp-names>
+      <filter-fields>A03-Datos_Empleado</filter-fields>
+      <date-picker>A00-Campo_Fecha</date-picker>
+    </firebase-autoform>
 
 
     <!--******************* PELICULAS ********************-->
-    <firebase-loginbutton api-key="AIzaSyCVpVjyqS9qNcTsTDuQ8qBL1i4VPy5CdpY" domain="coleccion-peliculas"
+    <!--<firebase-loginbutton api-key="AIzaSyCVpVjyqS9qNcTsTDuQ8qBL1i4VPy5CdpY" domain="coleccion-peliculas"
       messaging-sender-id="852819704247" app-id="1:852819704247:web:9ac0a093401920ed"></firebase-loginbutton>
 
       <!--<firebase-autoform id="fbaf1" path="/B01-categoría" show-path="true" auto-save="true">-->
 
-
-    <h3>Edit entry ID 5</h3>
     <style>
       #fbaf1 {
-        --fields-max-width: 600px;
+        --fields-max-width: 700px;
       }
     </style>
-    <firebase-autoform id="fbaf1" path="/peliculas" el-id="6"  logged-user="Insertado por" show-path="true" auto-save="true">
+    <!--
+    <firebase-autoform id="fbaf1" path="/peliculas" logged-user="Insertado por" show-path="true" auto-save="true">
+      <date-picker>A00-Fecha</date-picker>
       <textarea-fields>C02-título</textarea-fields>
-      
       <fileupload-fields>A02-carátula</fileupload-fields>
+
       <grp-names>A=Cartel,B=Categorización,C=Datos,D=Valoración</grp-names>
       <grp-collapsible>B,D</grp-collapsible>
-      <date-picker>A00-Fecha</date-picker>
 
       <description-field>A02-carátula=Sube la caratula de la pélicula en formato imagen</description-field>
       <description-field>D01-me_gustó|D02-valoración=Probando la misma descripción en dos campos diferentes</description-field>
@@ -159,7 +194,7 @@
         C02-título=length(5-50)
       </validation-fields>
       
-    </firebase-autoform>
+    </firebase-autoform>-->
 
 
 
@@ -171,6 +206,14 @@
         if (ev.detail.id) { console.log('ID: ', ev.detail.id); }
         //console.log(ev.detail.obj);
       });
+      document.addEventListener('firebase-autoform-data-saved', (ev) => {
+        console.log('SAVE DATA - PATH: ', ev.detail.path);
+        if (ev.detail.id) { 
+          console.log('ID: ', ev.detail.id);
+          console.log(ev.detail.data);
+        }
+      });
+      
 
       // function thereIsPath(path) {
 
