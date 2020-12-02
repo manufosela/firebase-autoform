@@ -565,7 +565,7 @@ export class FirebaseAutoform extends LitElement {
   updated(changedProperties) {
     changedProperties.forEach(async (oldValue, propName) => {
       if ( (propName === 'elId' || propName === 'path') && this.elId !== oldValue && oldValue !== undefined) {
-        await this.getDataId();
+        this.data = await this.getDataId();
         await this._processData();
         this._allIsReady();
       }
@@ -841,6 +841,7 @@ export class FirebaseAutoform extends LitElement {
 
   async _processData() {
     // this.__imcalled('_processData');
+    this.shadowRoot.querySelector('#formfieldlayer').innerHTML = '';
     try {
       await this._analizeFields();
       await this._getAllGroups();
