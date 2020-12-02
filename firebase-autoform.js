@@ -306,6 +306,14 @@ export class FirebaseAutoform extends LitElement {
         border-bottom-color: #333;
         top: -13px;
       }
+      legend a { display: flex; flex-direction:columns; justify-content: space-between; cursor: pointer; }
+      .triangulo { position: relative; border-style: solid; border-width: 18px; width: 0; height: 0; }
+      .triangulo>div { border-style: solid; border-width: 10px; width: 0; height: 0; position:relative; }
+      .triangulo.arriba { border-color: black transparent transparent transparent; top:5px; } 
+      .triangulo.arriba>div { border-color: white transparent transparent transparent; }
+      .triangulo.abajo { border-color: transparent transparent black transparent; top:-12px; }
+      .triangulo.abajo>div { border-color: transparent transparent white transparent; }
+
       .bubbleSaved {
         content:"Saved";
         position:absolute;
@@ -705,10 +713,10 @@ export class FirebaseAutoform extends LitElement {
         if (this.collapsibleGroups.includes(letter)) {
           fieldSet.classList.add('collapsed');
           const legend = fieldSet.parentElement.querySelector(`#${fieldSet.id} > legend`);
+          const legendText = legend.innerHTML;
           if (!legend.querySelector('a')) {
             const btn = document.createElement('a');
-            btn.classList.add('toggle');
-            btn.classList.add('down');
+            btn.innerHTML = `<div>${legendText}</div><div class="triangulo abajo"></div>`;
             legend.appendChild(btn);
             btn.addEventListener('click', this._toggleCollapse);
           }
