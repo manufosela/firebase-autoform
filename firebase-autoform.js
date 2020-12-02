@@ -722,6 +722,8 @@ export class FirebaseAutoform extends LitElement {
             legend.appendChild(btn);
             btn.addEventListener('click', this._toggleCollapse);
           }
+        } else {
+          fieldSet.classList.remove('collapsed');
         }
       }
       resolve();
