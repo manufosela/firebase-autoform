@@ -1170,6 +1170,7 @@ export class FirebaseAutoform extends LitElement {
       const DOMGroup = (labelKey !== 'loggedUser') ? document.createElement('fieldset') : document.createElement('div');
       DOMGroup.id = labelKey;
       DOMGroup.className = (style === 'flex') ? 'containerFieldsGroupFlex' : 'containerFieldsGroup';
+      DOMGroup.classList.add('collapsed');
       if (!this.shadowRoot.querySelector(`#${labelKey}`)) {
         this.shadowRoot.querySelector('#formfieldlayer').appendChild(DOMGroup);
       }
