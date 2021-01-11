@@ -1821,8 +1821,7 @@ export class FirebaseAutoform extends LitElement {
     }
 
     firebase.database().ref(this.path).child(nextId).set(data, (error) => {
-      console.log(nextId);
-      console.log(data);
+      console.log('nextId', nextId);
       console.log('saved data', data);
       if (error) {
         this._showMsgPopup(error.message);
@@ -1838,13 +1837,6 @@ export class FirebaseAutoform extends LitElement {
             if (!this.isChild) {
               this._showMsgPopup('Datos guardados correctamente', callbackFn);
             }
-            document.dispatchEvent(new CustomEvent('firebase-autoform-data-saved', {
-              detail: {
-                path: this.path,
-                id: this.elId,
-                data: data
-              }
-            }));
             if (this.isChild) {
               this._firebaseAutoformEls.forEach((el) => {
                 this.shadowRoot.querySelector(`#${el}`).save();
@@ -1854,6 +1846,13 @@ export class FirebaseAutoform extends LitElement {
         } else {
           // console.log('todo guardado');
         }
+        document.dispatchEvent(new CustomEvent('firebase-autoform-data-saved', {
+          detail: {
+            path: this.path,
+            id: this.elId,
+            data: data
+          }
+        }));
       }
     });
   }
