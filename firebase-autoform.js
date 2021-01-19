@@ -355,7 +355,8 @@ export class FirebaseAutoform extends LitElement {
     this.groups = {};
     this.DOMGroups = {};
     this.subGroups = {};
-    this.noGroups = ['GRP___created_at', 'GRP___edit_user'];
+    this.noGroups = ['GRP___created_at', 'GRP___edit_user', 'GRP___revised'];
+    this.READONLYFIELDS = ['__edit_user', '__created_at', '__revised'];
     this.MODELFIELDS = [];
     this.VALUESMODELFIELDS = {};
     this.TYPEMODELFIELDS = {};
@@ -971,7 +972,7 @@ export class FirebaseAutoform extends LitElement {
       const keys = Object.keys(data);
       this._arrKeys = keys;
       for (let key of keys) {
-        if (key !== '__edit_user' && key !== '__created_at') {
+        if (!this.READONLFIELDS.includes(key)) {
           await this._getFieldForm(data[key], key);
         }
       }
