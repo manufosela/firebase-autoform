@@ -328,6 +328,14 @@ export class FirebaseAutoform extends LitElement {
       .invisible {
         display: none;
       }
+      .badwords {
+        font-weight: bold;
+        color: red;
+      }
+      .borderRed {
+        border: 4px dashed red;
+        border-radius: 10px;
+      }
     `;
   }
 
@@ -512,6 +520,7 @@ export class FirebaseAutoform extends LitElement {
     const firebaseAreYouLoggedEvent = new Event('firebase-are-you-logged'); // (2)
     document.dispatchEvent(firebaseAreYouLoggedEvent);
 
+    this.forgottenWords = (this.querySelector('forgotten-words')) ? this.querySelector('forgotten-words').innerText.replace(/[\n\s]*/g, '').split(',') : [];
     this.textareaFields = (this.querySelector('textarea-fields')) ? this.querySelector('textarea-fields').innerText.replace(/[\n\s]*/g, '').split(',') : [];
     this.readonlyFields = (this.querySelector('readonly-fields')) ? this.querySelector('readonly-fields').innerText.replace(/[\n\s]*/g, '').split(',') : [];
     this.datepickerFields = (this.querySelector('date-picker')) ? this.querySelector('date-picker').innerText.replace(/[\n\s]*/g, '').split(',') : [];
@@ -821,6 +830,7 @@ export class FirebaseAutoform extends LitElement {
       await this._createContainers();
       await this._insertFields();
       await this._completeView();
+      this.checkForgottenWords();
     } catch (msg) {
       console.error(`ERROR3 in _processData: ${msg}`);
       this.shadowRoot.querySelector('#spinner').active = false;
@@ -1575,8 +1585,46 @@ export class FirebaseAutoform extends LitElement {
     this._showMsgPopup('Datos guardados correctamente', () => {});
   }
 
+  checkForgottenWords() {
+    const groups = ['B', 'C', 'D' , 'E'];
+    groups.forEach((group) => {
+      const badWords = [];
+      const textToCheck = this.data[`${group}02-descripción`];
+      this.forgottenWords.forEach((forgottenWord) => {
+        const index = textToCheck.indexOf(forgottenWord);
+        if (!!~index) {
+          const strTmp = textToCheck.substr(index);
+          const indexEnd = strTmp.indexOf(' ');
+          const badWord = strTmp.substr(0, indexEnd);
+          badWords.push(badWord);
+          console.log('encontrado ' + badWord);
+        }
+      });
+      const el = this.shadowRoot.querySelector(`#${group}02-descripción`);
+      if (badWords.length > 0) {
+        let spanBadWords;
+        if (!el.parentNode.querySelector('#BADWORDS_' + group)) {
+          el.classList.add('borderRed');
+          spanBadWords = document.createElement('span');
+          spanBadWords.id = 'BADWORDS_' + group;
+          spanBadWords.classList.add('badwords');
+          el.parentNode.insertBefore(spanBadWords, el);
+        } else {
+          spanBadWords = el.parentNode.querySelector('#BADWORDS_' + group)
+        }
+        spanBadWords.innerHTML = "Usando palabras no permitidas: " + badWords.join(', ');
+      } else {
+        el.classList.remove('borderRed');
+        if (el.parentNode.querySelector('#BADWORDS_' + group)) {
+          el.parentNode.querySelector('#BADWORDS_' + group).remove();
+        }
+      }
+    });
+  }
+
   saveComplex() {
     this.data = this._getCurrentDataFromElements();
+    this.checkForgottenWords();
     this._saveFirebase();
   }
 
