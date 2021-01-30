@@ -1586,7 +1586,8 @@ export class FirebaseAutoform extends LitElement {
   }
 
   checkForgottenWords() {
-    const groups = ['B', 'C', 'D' , 'E'];
+    const groups = this.collapsibleGroups;
+    
     groups.forEach((group) => {
       const badWords = [];
       const textToCheck = this.data[`${group}02-descripción`];
