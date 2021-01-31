@@ -808,13 +808,13 @@ export class FirebaseAutoform extends LitElement {
   }
 
   getDataId(id = this.elId) {
-    return new Promise(async resolve => {
+    return new Promise(async (resolve, reject) => {
       const path = this.path + '/' + id;
       const data = await this._getDataPath(path);
       if (data) {
         resolve(data);
       } else {
-        const msg = `ID >${id}< not found`;
+        const msg = `ID >${id}< not found in path ${path}`;
         this.shadowRoot.querySelector('#spinner').active = false;
         this.shadowRoot.querySelector('#formfieldlayer').innerHTML = `<h1>ERROR2 in getDataId</h1>${msg}`;
         reject(null);
