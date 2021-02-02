@@ -51,6 +51,7 @@ export class FirebaseAutoform extends LitElement {
       },
       /**
        * Id del componente firebase-autolist del que escuchar el evento firebase-autolist-selectid
+       * Si es null escucha todos los eventos firebase-autolist-selecteid
        */
       listen: {
         type: String
