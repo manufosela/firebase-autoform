@@ -49,6 +49,12 @@ export class FirebaseAutoform extends LitElement {
         type: String,
         attribute: 'el-id'
       },
+      /**
+       * Id del componente firebase-autolist del que escuchar el evento firebase-autolist-selectid
+       */
+      listen: {
+        type: String
+      },
       isChild: {
         type: Boolean,
         attribute: 'is-child'
@@ -345,6 +351,7 @@ export class FirebaseAutoform extends LitElement {
 
     this.isChild = false;
     this.elId = null; /* Atributo id del elemento firebase-autoform */
+    this.listen = null; /* Id del componente firebase-autolist del que escuchar el evento firebase-autolist-selectid */
     this.data = null;
     this.dataUser = null;
     this._fieldsInRootPath = [];
@@ -409,7 +416,10 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _setElId_(ev) {
-    this.elId = ev.detail.id;
+    const id = ev.detail.objId;
+    if (this.listen === null || this.listen === id) {
+      this.elId = ev.detail.id;
+    }
   }
 
   _setUploadedFileName_(ev) {
@@ -802,7 +812,7 @@ export class FirebaseAutoform extends LitElement {
           console.error(msg);
           this.shadowRoot.querySelector('#spinner').active = false;
           this.shadowRoot.querySelector('#formfieldlayer').innerHTML = `<h1>ERROR1 in getDataPath</h1>${msg}`;
-          reject(null);
+          reject(msg);
         });
     });
   }
@@ -817,7 +827,7 @@ export class FirebaseAutoform extends LitElement {
         const msg = `ID >${id}< not found in path ${path}`;
         this.shadowRoot.querySelector('#spinner').active = false;
         this.shadowRoot.querySelector('#formfieldlayer').innerHTML = `<h1>ERROR2 in getDataId</h1>${msg}`;
-        reject(null);
+        reject(msg);
       }
     });
   }
@@ -1081,8 +1091,9 @@ export class FirebaseAutoform extends LitElement {
   _createContainerFieldsGroup(labelKey, style) {
     return new Promise( (resolve, reject) => {
       if (this.shadowRoot.querySelector('#'+labelKey)) {
-        console.error(labelKey, ' group ya creado');
-        reject();
+        const msg = `${labelKey} group ya creado`;
+        console.error(msg);
+        reject(msg);
       }
       const DOMGroup = (labelKey !== 'loggedUser') ? document.createElement('fieldset') : document.createElement('div');
       DOMGroup.id = labelKey;
