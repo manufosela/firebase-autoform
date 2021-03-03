@@ -1510,7 +1510,7 @@ export class FirebaseAutoform extends LitElement {
             let itemVal = item.val();
             richOption = document.createElement('rich-option');
             richOption.innerHTML = itemVal;
-            if (itemVal === elVal) {
+            if (itemVal.toLowerCase() === elVal.toLowerCase()) {
               selectedEl = parseInt(item.key) + 1;
             }
             richSelect.appendChild(richOption);
