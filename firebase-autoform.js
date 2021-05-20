@@ -4,14 +4,14 @@ import {
   css
 } from 'lit-element';
 import 'firebase/firebase-database';
-import {} from '@polymer/paper-button/paper-button.js';
-import {} from '@polymer/paper-input/paper-input.js';
-import {} from '@polymer/paper-input/paper-textarea.js';
-import {} from '@polymer/paper-checkbox/paper-checkbox.js';
-import {} from '@polymer/paper-spinner/paper-spinner.js'; // SPINNER
-import {} from '@polymer/paper-dialog/paper-dialog.js'; // POPUP
-import {} from 'firebase-uploadfile/firebase-uploadfile.js';
-import {} from 'rich-select/rich-select.js';
+import { } from '@polymer/paper-button/paper-button.js';
+import { } from '@polymer/paper-input/paper-input.js';
+import { } from '@polymer/paper-input/paper-textarea.js';
+import { } from '@polymer/paper-checkbox/paper-checkbox.js';
+import { } from '@polymer/paper-spinner/paper-spinner.js'; // SPINNER
+import { } from '@polymer/paper-dialog/paper-dialog.js'; // POPUP
+import { } from 'firebase-uploadfile/firebase-uploadfile.js';
+import { } from 'rich-select/rich-select.js';
 
 /**
  * `firebase-autoform`
@@ -92,7 +92,7 @@ export class FirebaseAutoform extends LitElement {
   }
 
   static get styles() {
-    return css `
+    return css`
       /* CSS CUSTOM VARS
         --path-title-color: #FF7800;
         --error-msg-color: blue;
@@ -920,9 +920,9 @@ export class FirebaseAutoform extends LitElement {
       const multi = (typeField === 'array') ? ' MULTIPLE' : '';
       this.HTMLFields[labelKey] = (this.textareaFields.includes(labelKey) ? 'TEXTAREA' :
         this.datepickerFields.includes(labelKey) ? 'DATE-PICKER' :
-        this.fileuploadFields.includes(labelKey) ? 'FILE-UPLOAD' :
-        this.TYPESCHEMAFIELDS[labelKey] === 'boolean' ? 'CHECKBOX' :
-        'INPUT') + multi;
+          this.fileuploadFields.includes(labelKey) ? 'FILE-UPLOAD' :
+            this.TYPESCHEMAFIELDS[labelKey] === 'boolean' ? 'CHECKBOX' :
+              'INPUT') + multi;
     }
     console.log(`--> ${labelKey} => ${this.HTMLFields[labelKey]}`);
   }
@@ -1034,6 +1034,7 @@ export class FirebaseAutoform extends LitElement {
     const readOnly = this.readonlyFields.includes(labelKey) || this.readonly ? 'readonly' : '';
     let labelCleanId = this.labelsFormatted[labelKey].labelCleanId;
     const labelShown = this.labelsFormatted[labelKey].labelShown;
+    const uploadedFilesPath = this.uploadedFilesPath || '/uploadedFiles';
     let HTMLTag;
     labelCleanId += (this.readonlyFields.includes(labelShown) ? ' [READONLY]' : '');
     if (this.textareaFields.includes(labelKey)) {
@@ -1044,7 +1045,7 @@ export class FirebaseAutoform extends LitElement {
       `;
     } else if (this.fileuploadFields.includes(labelKey)) {
       HTMLTag = `
-        <firebase-uploadfile id="${labelKey}" name="${labelCleanId}" path="/uploadedFiles" storage-name="NAME,FILENAME" ${(hasVal) ? `value="${elVal}"` : ''} delete-btn="true"></firebase-uploadfile>
+        <firebase-uploadfile id="${labelKey}" name="${labelCleanId}" path="${uploadedFilesPath}" storage-name="NAME,FILENAME" ${(hasVal) ? `value="${elVal}"` : ''} delete-btn="true"></firebase-uploadfile>
       `;
     } else if (this.datepickerFields.includes(labelKey)) {
       HTMLTag = `
@@ -1137,7 +1138,7 @@ export class FirebaseAutoform extends LitElement {
           for (let value of data) {
             id = labelKey + '_' + this._counter[labelKey];
             paperInput = this._createPaperInput(id, typeobj, label, readOnly, value);
-            paperInput.innerHTML += `<div class="slot" slot="suffix">${(this._counter[labelKey]+1)}</div>`;
+            paperInput.innerHTML += `<div class="slot" slot="suffix">${(this._counter[labelKey] + 1)}</div>`;
             containerFieldsGroup.appendChild(paperInput);
             this._counter[labelKey]++;
           }
@@ -1463,7 +1464,7 @@ export class FirebaseAutoform extends LitElement {
     firebase.database().ref(this.path).set(newData, (error) => {
       console.log(error);
     });
-    this._showMsgPopup('Datos guardados correctamente', () => {});
+    this._showMsgPopup('Datos guardados correctamente', () => { });
   }
 
   saveComplex() {
@@ -1613,23 +1614,25 @@ export class FirebaseAutoform extends LitElement {
   render() {
     const path = this.path.split('/');
     const child = (this.isChild) ? 'child' : '';
-    return html `
-      ${this.dataUser !== null ? html` 
-        <h3 class='path${child}'>
-          ${(this.bShowPath) ? html`${path[path.length - 1]}` : html``} 
-          <span class="id">
-            ${this.elId && !this.bHideId ? html` ID: ${this.elId}` : html``}
-          </span>
-          <paper-spinner id="spinner" class="blue" active></paper-spinner>
-        </h3>
-        <div class="container">
-          <section class="${child}">
-            <div id="formfieldlayer"></div>    
-            ${this.readonly ? html`` : (this.data !== undefined && !this.isChild) ? html`<paper-button id="saveBtn" class="save" raised @click="${this.save}">${(this._simple) ? html`Update` : (this.elId) ? html`Update [ID ${this.elId}]` : html`Insert new element`}</paper-button>` : html``}
-            <paper-dialog id="mensaje_popup"></paper-dialog>
-          </section>
-        </div>
-        <div id="bubbleSaved" class="invisible bubbleSaved">Saved</div>
+    return html`
+      ${this.dataUser !== null ? html`
+      <h3 class='path${child}'>
+        ${(this.bShowPath) ? html`${path[path.length - 1]}` : html``}
+        <span class="id">
+          ${this.elId && !this.bHideId ? html` ID: ${this.elId}` : html``}
+        </span>
+        <paper-spinner id="spinner" class="blue" active></paper-spinner>
+      </h3>
+      <div class="container">
+        <section class="${child}">
+          <div id="formfieldlayer"></div>
+          ${this.readonly ? html`` : (this.data !== undefined && !this.isChild) ? html`<paper-button id="saveBtn" class="save"
+            raised @click="${this.save}">${(this._simple) ? html`Update` : (this.elId) ? html`Update [ID ${this.elId}]` :
+            html`Insert new element`}</paper-button>` : html``}
+          <paper-dialog id="mensaje_popup"></paper-dialog>
+        </section>
+      </div>
+      <div id="bubbleSaved" class="invisible bubbleSaved">Saved</div>
       ` : html`<div class="waiting">Waiting for login...</div>`}
     `;
   }
