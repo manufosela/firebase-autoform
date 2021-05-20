@@ -102,6 +102,10 @@ export class FirebaseAutoform extends LitElement {
       bHideId: {
         type: Boolean,
         attribute: 'hide-id'
+      },
+      uploadedFilesPath: {
+        type: String,
+        attribute: 'files-path'
       }
     };
   }
