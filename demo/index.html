@@ -79,6 +79,7 @@
               <li>&lt;description-field&gt;A1-FIELD_1=Tooltip description to field_1&lt;/description-field&gt;</li>
               <li>&lt;description-field&gt;B1-FIELD_1|B1-FIELD_2=Tooltip description to field_1 and field_2&lt;/description-field&gt;</li>
               <li>&lt;description-field&gt;N1-FIELD_N=Tooltip description to field_n&lt;/description-field&gt;</li>
+              <li>&lt;forgotten-words&gt;word1,word2,word3&lt;/forgotten-words&gt;
             </ul>
           </section>
           <section>
@@ -127,30 +128,25 @@
       }
     </style>
 
-
-
-
     <!--******************* PELICULAS ********************-->
     <firebase-loginbutton api-key="AIzaSyCVpVjyqS9qNcTsTDuQ8qBL1i4VPy5CdpY" domain="coleccion-peliculas"
       messaging-sender-id="852819704247" app-id="1:852819704247:web:9ac0a093401920ed"></firebase-loginbutton>
 
-    <!--<firebase-autoform id="fbaf1" path="/B01-categoría" show-path="true" auto-save="true">-->
+    <firebase-autoform id="fbaf1" path="/B01-categoría" show-path="true" auto-save="true">
 
-
-    <h3>Edit entry ID 5</h3>
     <style>
       #fbaf1 {
-        --fields-max-width: 600px;
+        --fields-max-width: 700px;
       }
     </style>
-    <firebase-autoform id="fbaf1" path="/peliculas" el-id="4" logged-user="Insertado por" show-path="true"
-      auto-save="true">
+    <!--
+    <firebase-autoform id="fbaf1" path="/peliculas" logged-user="Insertado por" show-path="true" auto-save="true">
+      <date-picker>A00-Fecha</date-picker>
       <textarea-fields>C02-título</textarea-fields>
-
       <fileupload-fields>A02-carátula</fileupload-fields>
+
       <grp-names>A=Cartel,B=Categorización,C=Datos,D=Valoración</grp-names>
       <grp-collapsible>B,D</grp-collapsible>
-      <date-picker>A00-Fecha</date-picker>
 
       <description-field>A02-carátula=Sube la caratula de la pélicula en formato imagen</description-field>
       <description-field>D01-me_gustó|D02-valoración=Probando la misma descripción en dos campos diferentes
@@ -164,8 +160,9 @@
       <validation-fields>
         C02-título=length(5-50)
       </validation-fields>
-
-    </firebase-autoform>
+      
+      <forgotten-words>word1,word2,word3</forgotten-words>
+    </firebase-autoform>-->
 
 
 
@@ -177,6 +174,14 @@
         if (ev.detail.id) { console.log('ID: ', ev.detail.id); }
         //console.log(ev.detail.obj);
       });
+      document.addEventListener('firebase-autoform-data-saved', (ev) => {
+        console.log('SAVE DATA - PATH: ', ev.detail.path);
+        if (ev.detail.id) { 
+          console.log('ID: ', ev.detail.id);
+          console.log(ev.detail.data);
+        }
+      });
+      
 
       // function thereIsPath(path) {
 
