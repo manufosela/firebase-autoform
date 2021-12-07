@@ -12,14 +12,14 @@ import {
   css
 } from 'lit-element';
 import 'firebase/firebase-database';
-import {} from '@polymer/paper-button/paper-button.js';
-import {} from '@polymer/paper-input/paper-input.js';
-import {} from '@polymer/paper-input/paper-textarea.js';
-import {} from '@polymer/paper-checkbox/paper-checkbox.js';
-import {} from '@polymer/paper-spinner/paper-spinner.js'; // SPINNER
-import {} from '@polymer/paper-dialog/paper-dialog.js'; // POPUP
-import {} from 'firebase-uploadfile/firebase-uploadfile.js';
-import {} from 'rich-select/rich-select.js';
+import { } from '@polymer/paper-button/paper-button.js';
+import { } from '@polymer/paper-input/paper-input.js';
+import { } from '@polymer/paper-input/paper-textarea.js';
+import { } from '@polymer/paper-checkbox/paper-checkbox.js';
+import { } from '@polymer/paper-spinner/paper-spinner.js'; // SPINNER
+import { } from '@polymer/paper-dialog/paper-dialog.js'; // POPUP
+import { } from 'firebase-uploadfile/firebase-uploadfile.js';
+import { } from 'rich-select/rich-select.js';
 
 /**
  * `firebase-autoform`
@@ -102,12 +102,16 @@ export class FirebaseAutoform extends LitElement {
       bHideId: {
         type: Boolean,
         attribute: 'hide-id'
+      },
+      uploadedFilesPath: {
+        type: String,
+        attribute: 'files-path'
       }
     };
   }
 
   static get styles() {
-    return css `
+    return css`
       /* CSS CUSTOM VARS
         --path-title-color: #FF7800;
         --error-msg-color: blue;
@@ -432,17 +436,17 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _insertKeysModel(keysModel) {
-    function turron(b, index=0, obj = {}) {
+    function turron(b, index = 0, obj = {}) {
       if (index === b.length - 1) {
         obj[b[index]] = '';
       } else {
         obj[b[index]] = [];
-        obj[b[index]][0] = turron(b, index+1);
+        obj[b[index]][0] = turron(b, index + 1);
       }
       return obj;
     }
     let data = this.data;
-    for(let key of keysModel) {
+    for (let key of keysModel) {
       const b = key.split('.');
       const j = turron(b);
       this.log('_insertKeysModel', key, j);
@@ -459,7 +463,7 @@ export class FirebaseAutoform extends LitElement {
       const keys = Object.keys(data);
       const cleanKeys = keys.map(key => key.replace(/^.*[A-Z]\d*-/, ''));
       const keysInModel = this._intersectArrays(cleanKeys, this.MODELFIELDS);
-      for(let i = 0; i< cleanKeys.length; i++) {
+      for (let i = 0; i < cleanKeys.length; i++) {
         const key = cleanKeys[i];
         let tmpData = '';
         let tmpModelData;
@@ -470,7 +474,7 @@ export class FirebaseAutoform extends LitElement {
           data[keys[i]] = (Array.isArray(d)) ? tmpData : [tmpData];
         } else {
           data[keys[i]] = this._resetField(key, data[keys[i]]);
-        }       
+        }
       }
       resolve(data);
     });
@@ -487,11 +491,11 @@ export class FirebaseAutoform extends LitElement {
 
   _keyfy(obj, prefix = '') {
     return Object.keys(obj).reduce((res, el) => {
-      if( typeof obj[el][0] === 'object' ) {
+      if (typeof obj[el][0] === 'object') {
         return [...res, ...this._keyfy(obj[el][0], prefix + el + '.')];
-      } else if( Array.isArray(obj[el]) ) {
+      } else if (Array.isArray(obj[el])) {
         return [...res, (prefix !== '') ? prefix + el : el];
-      } else if( typeof obj[el] === 'object' && obj[el] !== null ) {
+      } else if (typeof obj[el] === 'object' && obj[el] !== null) {
         return [...res, ...this._keyfy(obj[el], prefix + el + '.')];
       } else {
         return [...res, prefix + el];
@@ -568,7 +572,7 @@ export class FirebaseAutoform extends LitElement {
 
   updated(changedProperties) {
     changedProperties.forEach(async (oldValue, propName) => {
-      if ( (propName === 'elId' || propName === 'path') && this.elId !== oldValue && oldValue !== undefined) {
+      if ((propName === 'elId' || propName === 'path') && this.elId !== oldValue && oldValue !== undefined) {
         this.data = await this.getDataId();
         await this._processData();
         this._allIsReady();
@@ -624,7 +628,7 @@ export class FirebaseAutoform extends LitElement {
           legendText = (this.labelsFormatted[grpId]) ? this.labelsFormatted[grpId].labelCleanId : '';
         }
         legend.innerText = legendText;
-        
+
         if (legendText !== '') {
           frmG.appendChild(legend);
         }
@@ -893,7 +897,7 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _getAllGroups() {
-    return new Promise( async resolve => {
+    return new Promise(async resolve => {
       await this._getGroups();
       await this._getGroupsMultiples();
       resolve();
@@ -1012,7 +1016,7 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _getSelectFieldType(labelKey) {
-    return new Promise( resolve => {
+    return new Promise(resolve => {
       /*
       Si no está en la lista de modelos es un campo comun tipo string:	INPUT, TEXTAREA, FECHA, CHECKBOX, FIREBASE-UPLOADFILE
       Si no está en la lista de modelos es un campo comun tipo array:   INPUT MULTIPLE, TEXTAREA MULTIPLE, FECHA MULTIPLE, CHECKBOX MULTIPLE, FIREBASE-UPLOADFILE MULTIPLE
@@ -1038,9 +1042,9 @@ export class FirebaseAutoform extends LitElement {
         const multi = (typeField === 'array') ? ' MULTIPLE' : '';
         this.HTMLFields[labelKey] = (this.textareaFields.includes(labelKey) ? 'TEXTAREA' :
           this.datepickerFields.includes(labelKey) ? 'DATE-PICKER' :
-          this.fileuploadFields.includes(labelKey) ? 'FILE-UPLOAD' :
-          this.TYPESCHEMAFIELDS[labelKey] === 'boolean' ? 'CHECKBOX' :
-          'INPUT') + multi;
+            this.fileuploadFields.includes(labelKey) ? 'FILE-UPLOAD' :
+              this.TYPESCHEMAFIELDS[labelKey] === 'boolean' ? 'CHECKBOX' :
+                'INPUT') + multi;
       }
       resolve();
     });
@@ -1090,8 +1094,8 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _createContainerFieldsGroup(labelKey, style) {
-    return new Promise( (resolve, reject) => {
-      if (this.shadowRoot.querySelector('#'+labelKey)) {
+    return new Promise((resolve, reject) => {
+      if (this.shadowRoot.querySelector('#' + labelKey)) {
         const msg = `${labelKey} group ya creado`;
         console.error(msg);
         reject(msg);
@@ -1158,6 +1162,7 @@ export class FirebaseAutoform extends LitElement {
     const readOnly = this.readonlyFields.includes(labelKey) || this.readonly ? 'readonly' : '';
     let labelCleanId = this.labelsFormatted[labelKey].labelCleanId;
     const labelShown = this.labelsFormatted[labelKey].labelShown;
+    const uploadedFilesPath = this.uploadedFilesPath || '/uploadedFiles';
     let HTMLTag;
     labelCleanId += (this.readonlyFields.includes(labelShown) ? ' [READONLY]' : '');
     if (this.textareaFields.includes(labelKey)) {
@@ -1168,7 +1173,7 @@ export class FirebaseAutoform extends LitElement {
       `;
     } else if (this.fileuploadFields.includes(labelKey)) {
       HTMLTag = `
-        <firebase-uploadfile id="${labelKey}" name="${labelCleanId}" path="/uploadedFiles" storage-name="NAME,FILENAME" ${(hasVal) ? `value="${elVal}"` : ''} delete-btn="true"></firebase-uploadfile>
+        <firebase-uploadfile id="${labelKey}" name="${labelCleanId}" path="${uploadedFilesPath}" storage-name="NAME,FILENAME" ${(hasVal) ? `value="${elVal}"` : ''} delete-btn="true"></firebase-uploadfile>
       `;
     } else if (this.datepickerFields.includes(labelKey)) {
       HTMLTag = `
@@ -1263,7 +1268,7 @@ export class FirebaseAutoform extends LitElement {
           for (let value of data) {
             id = labelKey + '_' + this._counter[labelKey];
             paperInput = this._createPaperInput(id, typeobj, label, readOnly, value);
-            paperInput.innerHTML += `<div class="slot" slot="suffix">${(this._counter[labelKey]+1)}</div>`;
+            paperInput.innerHTML += `<div class="slot" slot="suffix">${(this._counter[labelKey] + 1)}</div>`;
             containerFieldsGroup.appendChild(paperInput);
             this._counter[labelKey]++;
           }
@@ -1594,12 +1599,12 @@ export class FirebaseAutoform extends LitElement {
     firebase.database().ref(this.path).set(newData, (error) => {
       console.error(error);
     });
-    this._showMsgPopup('Datos guardados correctamente', () => {});
+    this._showMsgPopup('Datos guardados correctamente', () => { });
   }
 
   checkForgottenWords() {
     const groups = this.collapsibleGroups;
-    
+
     groups.forEach((group) => {
       const badWords = [];
       const textToCheck = this.data[`${group}02-descripción`];
@@ -1729,7 +1734,7 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _getNextId() {
-    return new Promise( resolve => {
+    return new Promise(resolve => {
       firebase.database().ref(this.path).once('value')
         .then(async (snapshot) => {
           const nextId = Object.keys(snapshot.val()).length;
@@ -1790,23 +1795,25 @@ export class FirebaseAutoform extends LitElement {
   render() {
     const path = this.path.split('/');
     const child = (this.isChild) ? 'child' : '';
-    return html `
-      ${this.dataUser !== null ? html` 
-        <h3 class='path${child}'>
-          ${(this.bShowPath) ? html`${path[path.length - 1]}` : html``} 
-          <span class="id">
-            ${this.elId && !this.bHideId ? html` ID: ${this.elId}` : html``}
-          </span>
-          <paper-spinner id="spinner" class="blue" active></paper-spinner>
-        </h3>
-        <div class="container">
-          <section class="${child}">
-            <div id="formfieldlayer"></div>    
-            ${this.readonly ? html`` : (this.data !== undefined && !this.isChild) ? html`<paper-button id="saveBtn" class="save" raised @click="${this.save}">${(this._simple) ? html`Update` : (this.elId) ? html`Update [ID ${this.elId}]` : html`Insert new element`}</paper-button>` : html``}
-            <paper-dialog id="mensaje_popup"></paper-dialog>
-          </section>
-        </div>
-        <div id="bubbleSaved" class="invisible bubbleSaved">Saved</div>
+    return html`
+      ${this.dataUser !== null ? html`
+      <h3 class='path${child}'>
+        ${(this.bShowPath) ? html`${path[path.length - 1]}` : html``}
+        <span class="id">
+          ${this.elId && !this.bHideId ? html` ID: ${this.elId}` : html``}
+        </span>
+        <paper-spinner id="spinner" class="blue" active></paper-spinner>
+      </h3>
+      <div class="container">
+        <section class="${child}">
+          <div id="formfieldlayer"></div>
+          ${this.readonly ? html`` : (this.data !== undefined && !this.isChild) ? html`<paper-button id="saveBtn" class="save"
+            raised @click="${this.save}">${(this._simple) ? html`Update` : (this.elId) ? html`Update [ID ${this.elId}]` :
+            html`Insert new element`}</paper-button>` : html``}
+          <paper-dialog id="mensaje_popup"></paper-dialog>
+        </section>
+      </div>
+      <div id="bubbleSaved" class="invisible bubbleSaved">Saved</div>
       ` : html`<div class="waiting">Waiting for login...</div>`}
     `;
   }

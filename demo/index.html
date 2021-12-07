@@ -30,12 +30,14 @@
     .attributes {
       padding-left: 20px;
     }
-    .id { color:#AAA; }
+
+    .id {
+      color: #AAA;
+    }
 
     firebase-autoform {
       min-height: 700px;
     }
-
   </style>
 </head>
 
@@ -103,7 +105,7 @@
           </section>
         </pre>
     </div>
-  
+
     <!--<style>
       .layer { display:flex; }
       .out1 { background: #43646D; width:250px; height:400px; border-radius: 0 0 200px 200px; }
@@ -121,7 +123,9 @@
 
     <h1>DEMO</h1>
     <style>
-      firebase-autoform { --fields-max-width:600px; }
+      firebase-autoform {
+        --fields-max-width: 600px;
+      }
     </style>
 
     <!--******************* PELICULAS ********************-->
@@ -145,13 +149,14 @@
       <grp-collapsible>B,D</grp-collapsible>
 
       <description-field>A02-carátula=Sube la caratula de la pélicula en formato imagen</description-field>
-      <description-field>D01-me_gustó|D02-valoración=Probando la misma descripción en dos campos diferentes</description-field>
+      <description-field>D01-me_gustó|D02-valoración=Probando la misma descripción en dos campos diferentes
+      </description-field>
       <description-field>A01-cartel=Descripción del tooltip del cartel</description-field>
-      
+
       <mandatory-fields>
         A01-cartel&A02-caratula,B01-categoría&B02-colección
       </mandatory-fields>
-      
+
       <validation-fields>
         C02-título=length(5-50)
       </validation-fields>
