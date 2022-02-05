@@ -1,75 +1,70 @@
-# \<firebase-autoform>
+# firebase-autoform
 
-This webcomponent follows the [open-wc](https://github.com/open-wc/open-wc) recommendation.
+Generador automático de un formulario para insertar o editar elementos en Firebase a partir de la estructura del json del primero de ellos indicado por un path
 
-## Installation
+## Demo
 
-```bash
-npm i firebase-autoform
 ```
+<h2>Basic firebase-autoform Demo</h2>
+<h3>Demo</h3>
+<firebase-autoform></firebase-autoform>
 
-## Usage
+```
+<!---
+```
+<custom-element-demo>
+  <template>
+    <link rel="import" href="firebase-autoform.html">
+    <next-code-block></next-code-block>
+  </template>
+</custom-element-demo>
+```
+-->
 
 ```html
-<script type="module">
-  import 'firebase-autoform/firebase-autoform.js';
-</script>
+<!-- EDICIÓN -->
+<firebase-autoform path="/peliculas" el-id="5"></firebase-autoform>
 
-<firebase-autoform></firebase-autoform>
+<!-- INSERCIÓN DE NUEVOS ELEMENTOS-->
+<firebase-autoform path="/peliculas"></firebase-autoform>
 ```
 
-## Linting and formatting
+## Dependencies
+Is mandatory has login token from firebase.
+You can use [firebase-loginbutton](https://github.com/manufosela/firebase-loginbutton) component to do it.
 
-To scan the project for linting and formatting errors, run
+Yo can use [firebase-autolist](https://github.com/manufosela/firebase-autolist) to show the list of elements to access o edit them.
 
-```bash
-npm run lint
+## Install the Polymer-CLI
+
+First, make sure you have the [Polymer CLI](https://www.npmjs.com/package/polymer-cli) and npm (packaged with [Node.js](https://nodejs.org)) installed. Run `npm install` to install your element's dependencies, then run `polymer serve` to serve your element locally.
+
+## Viewing Your Element
+
+```
+$ polymer serve
 ```
 
-To automatically fix linting and formatting errors, run
+## Running Tests
 
-```bash
-npm run format
+```
+$ polymer test
 ```
 
-## Testing with Web Test Runner
-
-To execute a single test run:
-
-```bash
-npm run test
+## Build
+```
+$ npm run build
 ```
 
-To run the tests in interactive watch mode run:
+Your application is already set up to be tested via [web-component-tester](https://github.com/Polymer/web-component-tester). Run `polymer test` to run your application's test suite locally.
 
-```bash
-npm run test:watch
-```
+## Author
+**user**
 
-## Demoing with Storybook
+## License
 
-To run a local instance of Storybook for your component, run
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details
 
-```bash
-npm run storybook
-```
+## Generated
 
-To build a production version of Storybook, run
-
-```bash
-npm run storybook:build
-```
-
-## Tooling configs
-
-For most of the tools, the configuration is in the `package.json` to minimize the amount of files in your project.
-
-If you customize the configuration a lot, you can consider moving them to individual files.
-
-## Local Demo with `web-dev-server`
-
-```bash
-npm start
-```
-
-To run a local development server that serves the basic demo located in `demo/index.html`
+**generator-lit-element-base** - *yeoman npm package* - by [@manufosela](https://github.com/manufosela/generator-litelement-webcomponent)
