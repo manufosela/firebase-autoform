@@ -1,298 +1,87 @@
-<!doctype html>
-<html>
-
-<head>
-  <title>firebase-autoform demo</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
-  <script type="module" src="/node_modules/firebase-loginbutton/firebase-loginbutton.js"></script>
-  <script type="module" src="../firebase-autoform.js"></script>
-  <style>
-    .blocks {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-    }
-
-    .block {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      white-space: normal;
-    }
-
-    .code {
-      padding: 20px;
-      color: #FFF;
-      background: #000;
-    }
-
-    .attributes {
-      padding-left: 20px;
-    }
-
-    .id {
-      color: #AAA;
-    }
-
-    firebase-autoform {
-      min-height: 700px;
-    }
-  </style>
-</head>
-
-<body>
-  <div class="vertical-section-container centered">
-    <h3>Basic firebase-autoform Demo</h3>
-    <div class="blocks">
-      <pre class="block code">
-          <code>
-            &lt;firebase-autoform&gt path="PATH_OF_FIREBASE" el-id="ELEMENT_ID";&lt;/firebase-autoform&gt;
-          </code>
-        </pre>
-      <pre class="block attributes">
-          <section>
-            <h3>Attributes</h3>
-            <ul>
-              <li>path (String)</li>
-              <li>[elId] (String)</li>
-              <li>[waiting-msg] (String)</li>
-              <li>[readonly] (Boolean)</li>
-              <li>[auto-save] (Boolean)</li>
-              <li>[logged-user] (String)</li>
-            </ul>
-            <br/><br/>
-            <h3>Public Properties</h3>
-            <ul>
-              <li>data (Object)</li>
-              <li>dataUser (Object)</li>
-            </ul>
-          </section>
-          <section>
-            <h3>Child nodes</h3>
-            <ul>
-              <li>&lt;textarea-fields&gt;A1-FIELD_1,A2-FIELD_2,[...],N1-FIELD_N&lt;/textarea-fields&gt;</li>
-              <li>&lt;readonly-fields&gt;B1-FIELD_1,B1-FIELD_2,[...],N1-FIELD_N&lt;/readonly-fields&gt;</li>
-              <li>&lt;fileupload-fields&gt;C1-FIELD_1,B1-FIELD_2,[...],N1-FIELD_N&lt;/fileupload-fields&gt;</li>
-              <li>&lt;grp-names&gt;A=GRP_NAME_A,B=GRP_NAME_B,[...],N=GRP_NAME_N&lt;/grp-names&gt;</li>
-              <li>&lt;grp-collapsible&gt;A,B,[...],N&lt;/grp-collapsible&gt;</li>
-              <li>&lt;description-field&gt;A1-FIELD_1=Tooltip description to field_1&lt;/description-field&gt;</li>
-              <li>&lt;description-field&gt;B1-FIELD_1|B1-FIELD_2=Tooltip description to field_1 and field_2&lt;/description-field&gt;</li>
-              <li>&lt;description-field&gt;N1-FIELD_N=Tooltip description to field_n&lt;/description-field&gt;</li>
-              <li>&lt;forgotten-words&gt;word1,word2,word3&lt;/forgotten-words&gt;
-            </ul>
-          </section>
-          <section>
-            <h3>Listen Events</h3>
-            <ul>
-              <li>firebase-signin<br>(from firebase-logingbutton component)</li>
-              <li>firebase-signout<br>(from firebase-logingbutton component)</li>
-              <li>firebase-autoform-selectid<br>(from firebase-autolist component)</li>
-            </ul>
-          </section>
-          <section>
-            <h3>CSS var</h3>
-            <ul>
-              <li>--path-title-color [default: FF7800]</li>
-              <li>--error-msg-color [default: blue]</li>
-              <li>--spinner-color [default: 4285f4]</li>
-              <li>--bg-save-btn-hover [default: lime]</li>
-              <li>--color-save-btn-hover [default: green]</li>
-              <li>--bg-save-btn [default: yellow]</li>
-              <li>--color-save-btn [default: blue]</li>
-              <li>--fields-max-width [default: 300px]</li>
-            </ul>
-          </section>
-        </pre>
-    </div>
-
-    <!--<style>
-      .layer { display:flex; }
-      .out1 { background: #43646D; width:250px; height:400px; border-radius: 0 0 200px 200px; }
-      .out2 { background: #43646D; width:250px; height:600px; border-radius: 0 0 200px 200px; }
-      .in1 { background: #FFF; width:200px; height:200px; border-radius:100px; position:relative; top:170px; left:25px; }
-      .in2 { background: #FFF; width:200px; height:200px; border-radius:100px; position:relative; top:370px; left:25px; }
-      .size1 { background: #43646D; width:90px; height:200px; border-radius: 0 0 90px 90px;}
-      .circle1 {background: #43646D; width:70px; height:70px; border-radius:70px; position:relative; top:200px; margin-left:10px;}
-    </style>
-    <div class="layer">
-      <div class="out1"><div class="in1"></div></div>
-      <div class="size1"><div class="circle1"></div></div>
-      <div class="out2"><div class="in2"></div></div>
-    </div>-->
-
-    <h1>DEMO</h1>
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
     <style>
+      body {
+        background: #fafafa;
+      }
       firebase-autoform {
-        --fields-max-width: 600px;
+        --fields-max-width: 720px;
       }
     </style>
-
-    <!--******************* PELICULAS ********************-->
-    <firebase-loginbutton api-key="AIzaSyCVpVjyqS9qNcTsTDuQ8qBL1i4VPy5CdpY" domain="coleccion-peliculas"
-      messaging-sender-id="852819704247" app-id="1:852819704247:web:9ac0a093401920ed"></firebase-loginbutton>
-
-    <firebase-autoform id="fbaf1" path="/B01-categoría" show-path="true" auto-save="true">
-
-    <style>
-      #fbaf1 {
-        --fields-max-width: 700px;
-      }
-    </style>
-    <!--
-    <firebase-autoform id="fbaf1" path="/peliculas" logged-user="Insertado por" show-path="true" auto-save="true">
-      <date-picker>A00-Fecha</date-picker>
-      <textarea-fields>C02-título</textarea-fields>
-      <fileupload-fields>A02-carátula</fileupload-fields>
-
-      <grp-names>A=Cartel,B=Categorización,C=Datos,D=Valoración</grp-names>
-      <grp-collapsible>B,D</grp-collapsible>
-
-      <description-field>A02-carátula=Sube la caratula de la pélicula en formato imagen</description-field>
-      <description-field>D01-me_gustó|D02-valoración=Probando la misma descripción en dos campos diferentes
-      </description-field>
-      <description-field>A01-cartel=Descripción del tooltip del cartel</description-field>
-
-      <mandatory-fields>
-        A01-cartel&A02-caratula,B01-categoría&B02-colección
-      </mandatory-fields>
-
-      <validation-fields>
-        C02-título=length(5-50)
-      </validation-fields>
-      
-      <forgotten-words>word1,word2,word3</forgotten-words>
-    </firebase-autoform>-->
-
-
-
+  </head>
+  <body>
+    <div id="demo"></div>
 
     <script type="module">
-      //process = {}; process.env="DEV";
-      document.addEventListener('firebase-autoform-ready', (ev) => {
-        console.log('PATH: ', ev.detail.path);
-        if (ev.detail.id) { console.log('ID: ', ev.detail.id); }
-        //console.log(ev.detail.obj);
-      });
-      document.addEventListener('firebase-autoform-data-saved', (ev) => {
-        console.log('SAVE DATA - PATH: ', ev.detail.path);
-        if (ev.detail.id) { 
-          console.log('ID: ', ev.detail.id);
-          console.log(ev.detail.data);
-        }
-      });
-      
+      import { html, render } from 'lit';
+      import '@firebase-utils/firebase-loginbutton';
+      import '../firebase-autoform.js';
 
-      // function thereIsPath(path) {
+      render(
+        html`
+          <firebase-loginbutton
+            id="kairos-login"
+            api-key="AIzaSyDaAaGDF5ESVSOexYdQEUFoW3YthqDeK2c"
+            domain="seguimiento-mensual"
+            messaging-sender-id="1058838981723"
+            app-id="1:1058838981723:web:e2e69043f945a99bc0e37e"
+            show-email
+            show-photo
+          >
+          </firebase-loginbutton>
 
-      // }
+          <firebase-autoform
+            id="fbaf1"
+            login-id="kairos-login"
+            path="/data/manu_fosela/2022"
+            el-id="01-Enero"
+            show-path="true"
+            auto-save="true"
+          >
+            <textarea-fields
+              >B02-descripción,C02-descripción,D02-descripción,E02-descripción</textarea-fields
+            >
+            <fileupload-fields
+              >B03-evidencia,C03-evidencia,D03-evidencia,E03-evidencia</fileupload-fields
+            >
 
-      // function _getGrpId(labelKey, level) {
-      //   let grpId;
-      //   const partsId = labelKey.split('-');
-      //   if (partsId.length > 1) {
-      //     if (labelKey.search(/_[0-9]*$/) !== -1) {
-      //       grpId = `GRP_${level}_${labelKey}`;
-      //     } else {
-      //       const grpName = partsId[0].replace(/[0-9]*/g, '');
-      //       grpId = `GRP_${level}_${grpName}`;
-      //     }
-      //   } else {
-      //     grpId = `GRP_${level}_${labelKey}`;
-      //   }
-      //   return grpId;
-      // }
+            <grp-names
+              >A=Capacidad,B=Evidencia 1,C=Evidencia 2,D=Evidencia 3,E=Evidencia
+              4</grp-names
+            >
 
-      // let groups = {};
+            <grp-collapsible>B,C,D,E</grp-collapsible>
 
-      // function _createFormGroup(labelKey, level, style) {
-      //   return new Promise((resolve) => {
-      //     const grpId = _getGrpId(labelKey, level);
-      //     console.log('Creando grupo ' + grpId);
-      //     //let formGroupLayer = this.shadowRoot.querySelector(`#${grpId}`);
-      //     if (!groups[grpId]) {
-      //       groups[grpId] = (labelKey !== 'loggedUser') ? document.createElement('fieldset') : document.createElement('div'); 
-      //       groups[grpId].id = grpId;
-      //       groups[grpId].className = (style === 'flex') ? 'formGroupFlex' : 'formGroup';
-      //     }
-      //     resolve(groups[grpId]);
-      //   });
-      // }
-
-      // function _createField(container, key) {
-      //   container.innerHTML += key;
-      // }
-
-      // function analyzeFields(schema, level, parentKey) {
-      //   parentKey = parentKey || document.body;
-      //   if (level <= 1) {
-      //     for (let key in schema) {
-      //       if (Array.isArray(schema[key])) {
-      //         console.log('\t'.repeat(level) + key, "Array");
-      //       } else if (typeof schema[key] === 'object') {
-      //         console.log('\t'.repeat(level) + key, typeof schema[key]);
-      //         analyzeFields(schema[key], level + 1, key);
-      //         _createFormGroup(key, level)
-      //           .then(c => {
-      //             _createField(c, key);
-      //             console.log('-> ' + c.id);
-      //             document.body.appendChild(c);
-      //           })
-      //           .catch((err)=> {
-      //             console.warn(err);
-      //           })
-      //       } else if (typeof schema[key] === 'string') {
-      //         console.log('\t'.repeat(level) + key, typeof schema[key]);
-      //         _createFormGroup(parentKey, level)
-      //           .then(c => {
-      //             console.log(c, key);
-      //             _createField(c, key);
-      //           })
-      //           .catch((err)=> {
-      //             console.warn(err);
-      //           })
-      //       } else {
-      //         console.warn(key, 'INVALID TYPE');
-      //       }
-      //     }
-      //   }
-      // }
-
-      // function analyze(schema) {
-      //   if (Array.isArray(schema)) {
-      //     throw('INVALID SCHEMA');
-      //   } else if (typeof schema === 'object') {
-      //     analyzeFields(schema, 0);
-      //   } else {
-      //     throw('INVALID SCHEMA');
-      //   }
-      // }
-
-      // import 'firebase/firebase-database';
-      // document.addEventListener('firebase-signin', (ev) => {
-      //   const path = '/data'
-      //   let starredStatusRef = firebase.database().ref(path);
-      //   starredStatusRef.once('value')
-      //     .then((snapshot) => {
-      //       const data = snapshot.val();
-      //       if (data[0]) {
-      //         analyze(data[0]);
-      //       } else {
-      //         throw('Not found element 0 (SCHEMA)');
-      //       }
-      //     })
-      //     .catch((err) => {
-      //       console.log(err);
-      //     });
-      //   });
+            <description-field
+              >B02-descripción|C02-descripción|D02-descripción|E02-descripción=Hay
+              que rellenar de manera objetiva las descripciones, hablando de
+              tareas concretas, tecnologias, metodologías, herramientas... Es
+              necesario ser objetivo y conciso en las descripciones. Las
+              descripciones deben tener al menos 2 lineas. Utilizar eufemismos
+              como se indican en el apartado CONSEJOS. Se puede poner alguna url
+              a parte de la del apartado URL</description-field
+            >
+            <description-field
+              >B03-evidencia|C03-evidencia|D03-evidencia|E03-evidencia=Hay que
+              subir/adjuntar un archivo de MAXIMO 1Mb. Para las imagenes subir
+              pantallazos completos (reduce resolución/tamaño si es necesario),
+              no trocitos de imagen. En caso de necesitar subir mas de un
+              fichero, comprimir con ZIP y subirlo</description-field
+            >
+            <description-field
+              >B04-url|C04-url|D04-url|E04-url=Url de la evidencia principal.
+              Puede ser un repositorio, Jira, la app...</description-field
+            >
+            <description-field
+              >B01-proyecto|C01-proyecto|D01-proyecto|E01-proyecto=Busca y
+              selecciona el proyecto para el que trabajaste</description-field
+            >
+          </firebase-autoform>
+        `,
+        document.querySelector('#demo')
+      );
     </script>
-
-    <!--<h3>Add new entry</h3>
-    <firebase-autoform path="/peliculas">
-      <textarea-fields>C02-título</textarea-fields>
-      <fileupload-fields>A02-carátula</uploadfile-fields>
-    </firebase-autoform>-->
-  </div>
-</body>
-
+  </body>
 </html>

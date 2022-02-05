@@ -1,14 +1,15 @@
 {
   "name": "firebase-autoform",
-  "description": "Lit-Element webcomponent firebase-autoform",
-  "version": "2.8.9",
+  "description": "Webcomponent firebase-autoform following open-wc recommendations",
+  "license": "MIT",
+  "author": "manufosela",
+  "version": "3.0.0",
   "main": "firebase-autoform.js",
+  "module": "firebase-autoform.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/manufosela/firebase-autoform"
   },
-  "author": "manufosela",
-  "license": "Apache-2.0",
   "keywords": [
     "webcomponent",
     "lit-element"
@@ -17,7 +18,18 @@
     "url": "https://github.com/manufosela/firebase-autoform/issues"
   },
   "homepage": "https://github.com/manufosela/firebase-autoform",
+  "scripts": {
+    "analyze": "cem analyze --litelement",
+    "start": "web-dev-server",
+    "lint": "eslint --ext .js,.html . --ignore-path .gitignore && prettier \"**/*.js\" --check --ignore-path .gitignore",
+    "format": "eslint --ext .js,.html . --fix --ignore-path .gitignore && prettier \"**/*.js\" --write --ignore-path .gitignore",
+    "test": "web-test-runner --coverage",
+    "test:watch": "web-test-runner --watch",
+    "storybook": "npm run analyze -- --exclude dist && web-dev-server -c .storybook/server.mjs",
+    "storybook:build": "npm run analyze -- --exclude dist && build-storybook"
+  },
   "dependencies": {
+    "@firebase-utils/firebase-loginbutton": "^1.4.9",
     "@material/mwc-textfield": "^0.14.1",
     "@polymer/paper-button": "^3.0.1",
     "@polymer/paper-checkbox": "^3.1.0",
@@ -27,25 +39,44 @@
     "@polymer/paper-item": "^3.0.1",
     "@polymer/paper-listbox": "^3.0.1",
     "@polymer/paper-spinner": "^3.0.2",
-    "firebase": "^9.6.0",
-    "firebase-uploadfile": "^2.0.0",
-    "lit-element": "^2.4.0",
+    "firebase": "^9.6.3",
+    "firebase-uploadfile": "^2.2.1",
+    "lit": "^2.1.1",
     "rich-select": "^1.1.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.13.8",
-    "@babel/plugin-proposal-class-properties": "^7.13.0",
-    "@babel/plugin-proposal-decorators": "^7.13.5",
-    "@rollup/plugin-babel": "^5.3.0",
-    "@rollup/plugin-node-resolve": "^11.2.0",
-    "@webcomponents/webcomponentsjs": "^2.5.0",
-    "es-dev-server": "^1.14.2",
-    "firebase-loginbutton": "^3.1.5",
-    "rollup": "^2.40.0",
-    "rollup-plugin-terser": "^7.0.2"
+    "@custom-elements-manifest/analyzer": "^0.4.17",
+    "@open-wc/eslint-config": "^4.3.0",
+    "@open-wc/testing": "next",
+    "@web/dev-server": "^0.1.28",
+    "@web/dev-server-storybook": "^0.0.2",
+    "@web/test-runner": "^0.13.22",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "husky": "^4.3.8",
+    "lint-staged": "^10.5.4",
+    "prettier": "^2.4.1"
   },
-  "scripts": {
-    "build": "rm -rf build && mkdir build && rollup -c",
-    "start": "es-dev-server --app-index /demo/index.html --node-resolve --watch --open"
+  "customElements": "custom-elements.json",
+  "eslintConfig": {
+    "extends": [
+      "@open-wc",
+      "prettier"
+    ]
+  },
+  "prettier": {
+    "singleQuote": true,
+    "arrowParens": "avoid"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }
