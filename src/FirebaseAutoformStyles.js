@@ -108,7 +108,7 @@ export const firebaseAutoformStyles = css`
   rich-select,
   select,
   paper-textarea {
-    width: 100%;
+    width: 99%;
     max-width: var(--fields-max-width, 300px);
     --secondary-text-color: var(--label-color, #f30);
   }

@@ -517,14 +517,6 @@ export class FirebaseAutoform extends LitElement {
     this.tooltip.style.left = '-1000px';
   }
 
-  _addEventsTooltip(field) {
-    const el = this.shadowRoot.querySelector(`#${field}`);
-    if (el) {
-      //   el.addEventListener('mouseover', this._showTooltip_);
-      //   el.addEventListener('mouseout', this._hideTooltip_);
-    }
-  }
-
   _insertTooltips() {
     return new Promise(resolve => {
       const toolTipsBtn = [...this.shadowRoot.querySelectorAll('.info-space')];
@@ -534,17 +526,6 @@ export class FirebaseAutoform extends LitElement {
       resolve();
     });
   }
-
-  // _insertTooltips() {
-  //   return new Promise(resolve => {
-  //     Object.keys(this.fieldsDesc).forEach((field) => {
-  //       if (Object.prototype.hasOwnProperty.call(this.fieldsDesc, field)) {
-  //         this._addEventsTooltip(field);
-  //       }
-  //     });
-  //     resolve();
-  //   });
-  // }
 
   _toggleCollapse(ev) {
     this._null = null;
@@ -1537,9 +1518,6 @@ export class FirebaseAutoform extends LitElement {
             containerFieldsGroup.appendChild(richSelect);
           }
           richSelect.value = elVal;
-          if (this.fieldsDesc[labelKey]) {
-            this._addEventsTooltip(labelKey);
-          }
           resolve(containerFieldsGroup);
         }
       });
