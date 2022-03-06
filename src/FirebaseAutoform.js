@@ -200,6 +200,15 @@ export class FirebaseAutoform extends LitElement {
 
   firstUpdated() {
     if (super.firstUpdated) super.firstUpdated();
+    if (!this.initialized) {
+      document.dispatchEvent(
+        new CustomEvent('are-it-logged-into-firebase', {
+          detail: {
+            id: this.loginId,
+          },
+        })
+      );
+    }
   }
 
   consoleLog(...msg) {
