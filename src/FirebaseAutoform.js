@@ -400,7 +400,7 @@ export class FirebaseAutoform extends LitElement {
   updated(changedProperties) {
     changedProperties.forEach(async (oldValue, propName) => {
       if (
-        (propName === 'elId' || propName === 'path') &&
+        (propName === 'elementSelectedId' || propName === 'path') &&
         this.elementSelectedId !== oldValue &&
         oldValue !== undefined
       ) {
@@ -1272,8 +1272,11 @@ export class FirebaseAutoform extends LitElement {
     const referenceNode = ev.target; // parentNode.querySelector('#addNewcrítica');
     const { labelShown } = this.labelsFormatted[labelKey];
     const { path } = parentNode.querySelector('firebase-autoform');
-    const elId = await this._createNewIdInFirebase(path, labelShown);
-    this._counter[labelKey] = elId;
+    const elementSelectedId = await this._createNewIdInFirebase(
+      path,
+      labelShown
+    );
+    this._counter[labelKey] = elementSelectedId;
     const id = `${labelKey}_${this._counter[labelKey]}`;
     const groupName =
       this.labelsFormatted[labelKey].labelCleanId +
@@ -1283,7 +1286,12 @@ export class FirebaseAutoform extends LitElement {
         .querySelector(`[id^="delLast${labelShown}"]`)
         .classList.remove('invisible');
     }
-    const newNode = this._createFirebaseAutoform(id, elId, path, groupName);
+    const newNode = this._createFirebaseAutoform(
+      id,
+      elementSelectedId,
+      path,
+      groupName
+    );
     parentNode.insertBefore(newNode, referenceNode);
   }
 
@@ -1329,7 +1337,7 @@ export class FirebaseAutoform extends LitElement {
   }
 
   _createMultipleSelect(labelKey, snap) {
-    // const elId = this.elementSelectedId || 0;
+    // const elementSelectedId = this.elementSelectedId || 0;
     const select = document.createElement('select');
     select.id = labelKey;
     select.setAttribute('multiple', 'true');
@@ -1390,12 +1398,12 @@ export class FirebaseAutoform extends LitElement {
     set(ref(this.db, this.path), data);
   }
 
-  _createFirebaseAutoform(id, elId, path, groupName) {
+  _createFirebaseAutoform(id, elementSelectedId, path, groupName) {
     const firebaseAutoform = document.createElement('firebase-autoform');
     firebaseAutoform.innerHTML = `<grp-names>A=${groupName}</grp-names>`;
     firebaseAutoform.setAttribute('id', id);
     firebaseAutoform.setAttribute('path', path);
-    firebaseAutoform.setAttribute('el-id', elId);
+    firebaseAutoform.setAttribute('element-selectedId', elementSelectedId);
     firebaseAutoform.setAttribute('is-child', true);
     firebaseAutoform.setAttribute('read-only', this.readonly || false);
     firebaseAutoform.setAttribute('auto-save', this.autoSave || false);
