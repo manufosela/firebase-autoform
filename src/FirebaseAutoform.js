@@ -1417,8 +1417,9 @@ export class FirebaseAutoform extends LitElement {
       this._counter[labelKey] = 0;
     }
     const childElId = this._counter[labelKey];
-    const elId = this.elementSelectedId || (await this._getNextId());
-    const path = `${this.path}/${elId}/${labelKey}`;
+    const elementSelectedId =
+      this.elementSelectedId || (await this._getNextId());
+    const path = `${this.path}/${elementSelectedId}/${labelKey}`;
     const refDb = ref(this.db, path);
     const groupName = this.labelsFormatted[labelKey].labelCleanId;
     onValue(refDb, snapshot => {
@@ -1427,7 +1428,7 @@ export class FirebaseAutoform extends LitElement {
         let idDomAttribute = labelKey;
         if (valueSnap === null || valueSnap === '') {
           if (this.HTMLFields[labelKey] === 'FIREBASE-AUTOFORM MULTIPLE') {
-            idDomAttribute += `_${elId}`;
+            idDomAttribute += `_${elementSelectedId}`;
           }
           this._insertModelInNewElement(
             this.labelsFormatted[labelKey].labelShown
@@ -1469,7 +1470,7 @@ export class FirebaseAutoform extends LitElement {
     containerFieldsGroupBase
   ) {
     this._counter[labelKey] = 0;
-    // const elId = this.elementSelectedId || 0;
+    // const elementSelectedId = this.elementSelectedId || 0;
     const { labelShown } = this.labelsFormatted[labelKey];
     const arrFirebaseAutoformElements = this.data[labelKey];
     const numberFirebaseAutoformElements = arrFirebaseAutoformElements.length;
