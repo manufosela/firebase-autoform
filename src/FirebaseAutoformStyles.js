@@ -283,28 +283,6 @@ export const firebaseAutoformStyles = css`
     border-radius: 10px;
   }
 
-  .bocadillo-cuadrado {
-    position: absolute;
-    height: var(--json-autoform-bocadillo-cuadrado-height, 200px);
-    width: var(--json-autoform-bocadillo-cuadrado-width, 500px);
-    background: var(--json-autoform-bocadillo-cuadrado-background, #fff);
-    box-shadow: 1px 12px 33px rgba(0, 0, 0, 0.5);
-    border-radius: 5px;
-    padding: var(--json-autoform-bocadillo-cuadrado-padding, 1rem);
-    font-family: var(--json-autoform-bocadillo-cuadrado-font-family, system-ui);
-  }
-
-  .bocadillo-cuadrado:before {
-    border: 25px solid white;
-    content: '';
-    border-left-color: transparent;
-    border-bottom-color: transparent;
-    border-right-color: transparent;
-    position: absolute;
-    bottom: -48px;
-    left: calc(50% - 25px);
-  }
-
   .info-icon {
     background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAABaUlEQVRIid2VPU7DQBCFPxzFDeEKHCDhDoQCShQilCtERAjIJVDEGaDi5zCIhoDABGjhAKYgBTHFzOIV2rXXSZcnjTbyzL63eZ5Zw7IjBnrADZAAXxoJcK25eF7yLvAOZCXxBuxVIY6AM4vgHjgCmsCqRgs4BsZW3Uj3lsKQfwP9kk0RcKC1RqQQXYt8M+Q0irYl0vEVxeSe9z01xg4XBpp7Bequgh655z5bigRqwIPm981Dm8h0wjkw85CsaLjwA1zob6dNL6re9BCEoKUciSuZarJRQFBkEcCa5lPzIKhvK8DY92exLfCh6/oCAmbvp0vgTtftBQR2dL11JU2bjpm/TR/516Y2YuTiypDxrypwqLkJnkEDmQVzVbR9RQ5sAVPk5e6WFY8skQHy132oISef6p7TkNNElkiGjP8JMkQNjQ1gSO75TMkrtX0HubjKPjgTAmzxoY50xBXwjExoCjwBl5rzvtDlwC8o13JbRpxVtAAAAABJRU5ErkJggg==')
       no-repeat scroll 0 0 transparent;
@@ -315,5 +293,49 @@ export const firebaseAutoformStyles = css`
     height: 24px;
     margin: 7px 5px 7px 0;
     float: left;
+  }
+
+  .tooltip-info {
+    position: relative;
+    display: inline-block;
+    font-size: 1rem;
+  }
+  .tooltip-info .tooltiptext {
+    visibility: hidden;
+    width: 30rem;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+
+    /* Position the tooltip text */
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+
+    /* Fade in tooltip */
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  /* Tooltip arrow */
+  .tooltip-info .tooltiptext::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+  }
+
+  /* Show the tooltip text when you mouse over the tooltip container */
+  .tooltip-info:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
   }
 `;
