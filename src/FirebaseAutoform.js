@@ -185,7 +185,10 @@ export class FirebaseAutoform extends LitElement {
     this._allIsReady = this._allIsReady.bind(this);
     this.finish = this.finish.bind(this);
     this.init = this.init.bind(this);
-
+    // this._hideTooltip_ = this._hideTooltip_.bind(this);
+    // this._showTooltip_ = this._showTooltip_.bind(this);
+    this._showBocadillo = this._showBocadillo.bind(this);
+    this._hideBocadillo = this._hideBocadillo.bind(this);
     this._addNewFormElement = this._addNewFormElement.bind(this);
     this._delFormElement = this._delFormElement.bind(this);
     this._cleanFields = this._cleanFields.bind(this);
@@ -518,6 +521,21 @@ export class FirebaseAutoform extends LitElement {
     });
   }
 
+  _hideTooltip_() {
+    this.tooltip.classList.remove('show');
+    this.tooltip.style.left = '-1000px';
+  }
+
+  _insertTooltips() {
+    return new Promise(resolve => {
+      const toolTipsBtn = [...this.shadowRoot.querySelectorAll('.info-space')];
+      toolTipsBtn.forEach(tooltip => {
+        tooltip.addEventListener('click', this._showBocadillo);
+      });
+      resolve();
+    });
+  }
+
   _toggleCollapse(ev) {
     this._null = null;
     const el = ev.target.parentNode.querySelector('.triangulo');
@@ -608,6 +626,7 @@ export class FirebaseAutoform extends LitElement {
   async _completeView() {
     this.shadowRoot.querySelector('#spinner').active = false;
     await this._insertLegends();
+    await this._insertTooltips();
     await this._makeCollapsibleGrps();
     this._addBtnEvents();
     if (this.autoSave) {
@@ -1039,11 +1058,7 @@ export class FirebaseAutoform extends LitElement {
       : '';
     if (this.textareaFields.includes(labelKey)) {
       HTMLTag = `
-        <div class="info-space info-icon tooltip-info">
-          <div class="tooltiptext">
-            ${this.fieldsDesc[labelKey]}
-          </div>
-        </div>
+        <div class="info-space info-icon"></div>
         <paper-textarea rows="3" type="${typeobj}" label="${labelCleanId}" id="${labelKey}" value="${
         hasVal ? elVal : ''
       }" ${readOnly}>
@@ -1052,11 +1067,7 @@ export class FirebaseAutoform extends LitElement {
       `;
     } else if (this.fileuploadFields.includes(labelKey)) {
       HTMLTag = `
-        <div class="info-space info-icon tooltip-info">
-          <div class="tooltiptext">
-            ${this.fieldsDesc[labelKey]}
-          </div>
-        </div>
+        <div class="info-space info-icon"></div>
         <firebase-uploadfile
           id="${labelKey}"
           login-btn-id="${this.loginId}"
@@ -1073,22 +1084,14 @@ export class FirebaseAutoform extends LitElement {
       `;
     } else if (this.datepickerFields.includes(labelKey)) {
       HTMLTag = `
-        <div class="info-space info-icon tooltip-info">
-          <div class="tooltiptext">
-            ${this.fieldsDesc[labelKey]}
-          </div>
-        </div>
+        <div class="info-space info-icon"></div>
         <label for="${labelKey}">${labelCleanId}</label><input type="date" id="${labelKey}" name="${labelCleanId}" ${
         hasVal ? `value="${elVal}"` : ''
       } />
       `;
     } else {
       HTMLTag = `
-        <div class="info-space info-icon tooltip-info">
-          <div class="tooltiptext">
-            ${this.fieldsDesc[labelKey]}
-          </div>
-        </div>
+        <div class="info-space info-icon"></div>
         <paper-input type="${typeobj}" label="${labelCleanId}" id="${labelKey}" value="${
         hasVal ? elVal : ''
       }" ${readOnly}></paper-input>
@@ -1356,11 +1359,7 @@ export class FirebaseAutoform extends LitElement {
         if (snapshot.exists()) {
           if (!this.shadowRoot.querySelector(`#${labelKey}`)) {
             const info = document.createElement('div');
-            info.classList.add('info-space', 'info-icon', 'tooltip-info');
-            const infotext = document.createElement('div');
-            infotext.classList.add('tooltiptext');
-            infotext.innerText = this.fieldsDesc[labelKey];
-            info.appendChild(infotext);
+            info.classList.add('info-space', 'info-icon');
             const label = document.createElement('label');
             label.for = labelShown;
             label.innerText = labelShown;
@@ -1493,11 +1492,7 @@ export class FirebaseAutoform extends LitElement {
         `/model/${this.labelsFormatted[labelKey].labelShown}`
       );
       const info = document.createElement('div');
-      info.classList.add('info-space', 'info-icon', 'tooltip-info');
-      const infotext = document.createElement('div');
-      infotext.classList.add('tooltiptext');
-      infotext.innerText = this.fieldsDesc[labelKey];
-      info.appendChild(infotext);
+      info.classList.add('info-space', 'info-icon');
       const richSelectLabel = document.createElement('label');
       const richSelect = document.createElement('rich-select');
       richSelect.id = labelKey;
