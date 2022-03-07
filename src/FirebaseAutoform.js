@@ -308,7 +308,7 @@ export class FirebaseAutoform extends LitElement {
       ? this.querySelectorAll('description-field')
       : [];
     for (const fieldDesc of fieldsDescDOM) {
-      const fieldDescParts = fieldDesc.innerText.split('=');
+      const fieldDescParts = fieldDesc.innerHTML.split('$=');
       const repeatedFields = fieldDescParts[0].split('|');
       for (const field of repeatedFields) {
         fieldsDesc[field] = fieldDescParts[1];
@@ -1367,7 +1367,7 @@ export class FirebaseAutoform extends LitElement {
             info.classList.add('info-space', 'info-icon', 'tooltip-info');
             const infotext = document.createElement('div');
             infotext.classList.add('tooltiptext');
-            infotext.innerText = this.fieldsDesc[labelKey];
+            infotext.innerHTML = this.fieldsDesc[labelKey];
             info.appendChild(infotext);
             const label = document.createElement('label');
             label.for = labelShown;
@@ -1505,7 +1505,7 @@ export class FirebaseAutoform extends LitElement {
       info.classList.add('info-space', 'info-icon', 'tooltip-info');
       const infotext = document.createElement('div');
       infotext.classList.add('tooltiptext');
-      infotext.innerText = this.fieldsDesc[labelKey];
+      infotext.innerHTML = this.fieldsDesc[labelKey];
       info.appendChild(infotext);
       const richSelectLabel = document.createElement('label');
       const richSelect = document.createElement('rich-select');

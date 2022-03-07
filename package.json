@@ -3,7 +3,7 @@
   "description": "Webcomponent firebase-autoform following open-wc recommendations",
   "license": "MIT",
   "author": "manufosela",
-  "version": "3.2.2",
+  "version": "3.2.3",
   "main": "firebase-autoform.js",
   "module": "firebase-autoform.js",
   "repository": {
