@@ -24,6 +24,11 @@ export const firebaseAutoformStyles = css`
     --uploadfile-bgcolor-button: #106BA0;
     --uploadfile-color-button: #FFF;
     --uploadfile-progress-width: 400px;
+
+    --firebase-autoform-tooltip-font-size: 1rem
+    --firebase-autoform-tooltip-width: 30rem
+    --firebase-autoform-tooltip-bg: #555
+    --firebase-autoform-tooltip-color: #FFF
   */
   :host {
     display: block;
@@ -298,15 +303,14 @@ export const firebaseAutoformStyles = css`
   .tooltip-info {
     position: relative;
     display: inline-block;
-    font-size: 1rem;
+    font-size: var(--firebase-autoform-tooltip-font-size, 1rem);
   }
   .tooltip-info .tooltiptext {
     visibility: hidden;
-    width: 30rem;
-    background-color: #555;
-    color: #fff;
-    text-align: center;
-    padding: 5px 0;
+    width: var(--firebase-autoform-tooltip-width, 30rem);
+    background-color: var(--firebase-autoform-tooltip-bg, #555);
+    color: var(--firebase-autoform-tooltip-color, #fff);
+    padding: 1rem;
     border-radius: 6px;
 
     /* Position the tooltip text */
