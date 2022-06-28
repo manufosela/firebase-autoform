@@ -153,8 +153,18 @@ export class FirebaseAutoform extends LitElement {
     this.groups = {};
     this.DOMGroups = {};
     this.subGroups = {};
-    this.noGroups = ['GRP___created_at', 'GRP___edit_user', 'GRP___revised'];
-    this.__FIELDS = ['__edit_user', '__created_at', '__revised'];
+    this.noGroups = [
+      'GRP___created_at',
+      'GRP___edit_user',
+      'GRP___revised',
+      'GRP___autorevised',
+    ];
+    this.__FIELDS = [
+      '__edit_user',
+      '__created_at',
+      '__revised',
+      '__autorevised',
+    ];
     this.MODELFIELDS = [];
     this.VALUESMODELFIELDS = {};
     this.TYPEMODELFIELDS = {};
@@ -1626,6 +1636,7 @@ export class FirebaseAutoform extends LitElement {
 
   checkForgottenWords() {
     const groups = this.collapsibleGroups;
+    this.badWords = [];
 
     groups.forEach(group => {
       const badWords = [];
@@ -1661,6 +1672,7 @@ export class FirebaseAutoform extends LitElement {
           el.parentNode.querySelector(`#BADWORDS_${group}`).remove();
         }
       }
+      this.badWords = [...this.badWords, ...badWords].filter(w => w);
     });
   }
 
@@ -1809,54 +1821,74 @@ export class FirebaseAutoform extends LitElement {
   }
 
   async _saveFirebase() {
-    const { data } = this;
-    this.elementSelectedId =
-      this.elementSelectedId || (await this._getNextId());
-    const nextId = this.elementSelectedId;
-    const callbackFn = this.elementSelectedId ? null : this._cleanFields;
-    data.__edit_user = this.userDisplayName;
-    data.__created_at = serverTimestamp();
-    this.data = data;
-    if (this.isChild) {
-      this.elementSelectedId = nextId;
-    }
+    if (this.badWords.length > 0) {
+      this._showMsgPopup(`
+        ANTES DE GUARDAR CORRIGE LOS ERRORES.<br>
+        Corrige las <span style="color:red;">palabras no permitidas</span>:<br>
+        <p style="color:#FF7939; font-weight:bold; font-size:1.2rem;">${this.badWords.join(
+          ', '
+        )}</p>
+        Debe cambiarlas por un eufemismo.<br>
+        Mira en 'Consejos' para mas información
+      `);
+    } else {
+      const { data } = this;
+      this.elementSelectedId =
+        this.elementSelectedId || (await this._getNextId());
+      const nextId = this.elementSelectedId;
+      const callbackFn = this.elementSelectedId ? null : this._cleanFields;
+      data.__edit_user = this.userDisplayName;
+      data.__created_at = serverTimestamp();
+      if (this.badWords.length > 0) {
+        data.__autorevised = `NOK!!Usas las palabras no permitidas: ${this.badWords.join(
+          ', '
+        )}, que se debe cambiar por un eufemismo. Mira en 'Consejos' para mas información`;
+      } else {
+        data.__autorevised = null;
+      }
 
-    update(ref(this.db, `${this.path}/${this.elementSelectedId}`), data)
-      .then(() => {
-        this.consoleLog('nextId', nextId);
-        this.consoleLog('saved data', data);
-        if (!this._firebaseAutoformEls.includes(this.fieldChanged)) {
-          if (this.fieldChanged !== '') {
-            const el = this.shadowRoot.querySelector(`#${this.fieldChanged}`);
-            this.fieldChanged = '';
-            const bubble = this.shadowRoot.querySelector('#bubbleSaved');
-            this._showBubbleFieldMsg(bubble, el);
-          } else {
-            if (!this.isChild) {
-              this._showMsgPopup('Datos guardados correctamente', callbackFn);
+      this.data = data;
+      if (this.isChild) {
+        this.elementSelectedId = nextId;
+      }
+
+      update(ref(this.db, `${this.path}/${this.elementSelectedId}`), data)
+        .then(() => {
+          this.consoleLog('nextId', nextId);
+          this.consoleLog('saved data', data);
+          if (!this._firebaseAutoformEls.includes(this.fieldChanged)) {
+            if (this.fieldChanged !== '') {
+              const el = this.shadowRoot.querySelector(`#${this.fieldChanged}`);
+              this.fieldChanged = '';
+              const bubble = this.shadowRoot.querySelector('#bubbleSaved');
+              this._showBubbleFieldMsg(bubble, el);
+            } else {
+              if (!this.isChild) {
+                this._showMsgPopup('Datos guardados correctamente', callbackFn);
+              }
+              if (this.isChild) {
+                this._firebaseAutoformEls.forEach(el => {
+                  this.shadowRoot.querySelector(`#${el}`).save();
+                });
+              }
             }
-            if (this.isChild) {
-              this._firebaseAutoformEls.forEach(el => {
-                this.shadowRoot.querySelector(`#${el}`).save();
-              });
-            }
+            document.dispatchEvent(
+              new CustomEvent('firebase-autoform-data-saved', {
+                detail: {
+                  id: this.id,
+                  path: this.path,
+                  elSelId: this.elementSelectedId,
+                  data,
+                },
+              })
+            );
           }
-          document.dispatchEvent(
-            new CustomEvent('firebase-autoform-data-saved', {
-              detail: {
-                id: this.id,
-                path: this.path,
-                elSelId: this.elementSelectedId,
-                data,
-              },
-            })
-          );
-        }
-      })
-      .catch(error => {
-        this._showMsgPopup(error.message);
-        throw error;
-      });
+        })
+        .catch(error => {
+          this._showMsgPopup(error.message);
+          throw error;
+        });
+    }
   }
 
   render() {
