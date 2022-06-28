@@ -1645,7 +1645,8 @@ export class FirebaseAutoform extends LitElement {
         const index = textToCheck.indexOf(forgottenWord);
         if (~index) {
           const strTmp = textToCheck.substr(index);
-          const indexEnd = strTmp.indexOf(' ');
+          const indexEnd =
+            strTmp.indexOf(' ') > 0 ? strTmp.indexOf(' ') : strTmp.length;
           const badWord = strTmp.substr(0, indexEnd);
           badWords.push(badWord);
           this.consoleLog(`encontrado ${badWord}`);
